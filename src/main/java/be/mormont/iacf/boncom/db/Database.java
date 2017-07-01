@@ -5,6 +5,8 @@ import be.mormont.iacf.boncom.data.Entity;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 
 /**
@@ -56,8 +58,44 @@ public class Database implements AutoCloseable {
         connection.close();
     }
 
-    public synchronized boolean ready() throws SQLException {
-        return false;
+    /**
+     * Check whether the database contains valid tables for the application to run.
+     * @return True if the database is ready, false otherwise
+     * @throws SQLException If connection fails
+     */
+    private synchronized boolean ready() throws SQLException {
+        String[] expectedNames = new String[] { EntityTable.NAME, OrderFormTable.NAME, OrderFormEntryTable.NAME };
+        String[] actualNames = getTableNames();
+
+        if (expectedNames.length != actualNames.length) {
+            return false;
+        }
+
+        Arrays.sort(expectedNames);
+        Arrays.sort(actualNames);
+
+        for (int i = 0; i < expectedNames.length; ++i) {
+            if (!actualNames[i].equals(expectedNames[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Return names of all tables currently in the database
+     * @return Array of table names
+     * @throws SQLException If connection fails
+     */
+    private String[] getTableNames() throws SQLException {
+        DatabaseMetaData metadata = connection.getMetaData();
+        ResultSet tables = metadata.getTables(null, null, "", new String[]{"table"});
+        ArrayList<String> names = new ArrayList<>();
+        while(tables.next()) {
+            final int TABLE_NAME = 3; // table name idx in result set
+            names.add(tables.getString(TABLE_NAME));
+        }
+        return names.toArray(new String[names.size()]);
     }
 
     public synchronized void createDatabaseIfNotExist() throws SQLException {
@@ -68,7 +106,7 @@ public class Database implements AutoCloseable {
 
     /**
      * Create tables if they don't exist.
-     * @throws SQLException
+     * @throws SQLException If database connection fails
      */
     private void createDatabase() throws SQLException {
         try (Statement statement = connection.createStatement()) {
