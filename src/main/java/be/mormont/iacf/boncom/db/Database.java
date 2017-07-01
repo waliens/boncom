@@ -6,7 +6,6 @@ import be.mormont.iacf.boncom.data.Entity;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 
 /**
@@ -16,11 +15,6 @@ import java.util.Collections;
 public class Database implements AutoCloseable {
     // JDBC driver name and database URL
     private static final String DB_URL = "jdbc:sqlite:database.db";
-    private static final String DB_NAME = "iacf-orderform";
-
-    //  Database credentials
-    private static final String USER = "access";
-    private static final String PASS = "";
 
     private static Database database = null;
     private Connection connection ;
@@ -89,13 +83,14 @@ public class Database implements AutoCloseable {
      */
     private String[] getTableNames() throws SQLException {
         DatabaseMetaData metadata = connection.getMetaData();
-        ResultSet tables = metadata.getTables(null, null, "", new String[]{"table"});
-        ArrayList<String> names = new ArrayList<>();
-        while(tables.next()) {
-            final int TABLE_NAME = 3; // table name idx in result set
-            names.add(tables.getString(TABLE_NAME));
+        try(ResultSet tables = metadata.getTables(null, null, "", new String[]{"table"})) {
+            ArrayList<String> names = new ArrayList<>();
+            while (tables.next()) {
+                final int TABLE_NAME = 3; // table name idx in result set
+                names.add(tables.getString(TABLE_NAME));
+            }
+            return names.toArray(new String[names.size()]);
         }
-        return names.toArray(new String[names.size()]);
     }
 
     public synchronized void createDatabaseIfNotExist() throws SQLException {
@@ -156,9 +151,7 @@ public class Database implements AutoCloseable {
 
             // insert default data
             Address iacfAddress = new Address("Rue des Bruyères", "150", null, "4000", "Liège");
-            ArrayList<String> iacfPhones = new ArrayList<>();
-            iacfPhones.add("04/252.92.86");
-            iacfPhones.add("04/254.23.67");
+            String[] iacfPhones = new String[]{"04/252.92.86", "04/254.23.67"};
             Entity iacf = new Entity("IACF Cointe", iacfAddress, iacfPhones);
 
             try(PreparedStatement prepStatement = new EntityTable().insertStatement(connection, iacf)) {
@@ -167,5 +160,27 @@ public class Database implements AutoCloseable {
 
             connection.commit();
         }
+    }
+
+    public <T> T executePreparedStatement(PreparedStatementBuilder<T> builder) throws SQLException {
+        try (PreparedStatement statement = builder.getStatement(connection)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return builder.success(resultSet);
+            } catch (Exception e) {
+                builder.failure(e);
+            }
+        } catch (Exception e) {
+            builder.failure(e);
+        }
+        return null;
+    }
+
+    /**
+     * Callback for building prepared statement
+     */
+    public interface PreparedStatementBuilder<T> {
+        PreparedStatement getStatement(Connection conn) throws SQLException;
+        T success(ResultSet resultSet);
+        default void failure(Exception e) {}
     }
 }
