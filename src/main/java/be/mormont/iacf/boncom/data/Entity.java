@@ -7,11 +7,12 @@ import java.util.ArrayList;
  * An entity is for instance a provider.
  */
 public class Entity {
+    private long id;
     private String name;
     private Address address;
-    private ArrayList<String> phoneNumbers;
+    private String[] phoneNumbers;
 
-    public Entity(String name, Address address, ArrayList<String> phoneNumbers) {
+    public Entity(String name, Address address, String[] phoneNumbers) {
         this.name = name;
         this.address = address;
         this.phoneNumbers = phoneNumbers;
@@ -33,11 +34,11 @@ public class Entity {
         this.address = address;
     }
 
-    public ArrayList<String> getPhoneNumbers() {
+    public String[] getPhoneNumbers() {
         return phoneNumbers;
     }
 
-    public void setPhoneNumbers(ArrayList<String> phoneNumbers) {
+    public void setPhoneNumbers(String[] phoneNumbers) {
         this.phoneNumbers = phoneNumbers;
     }
 }
