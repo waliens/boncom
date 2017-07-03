@@ -13,9 +13,22 @@ public class Entity {
     private String[] phoneNumbers;
 
     public Entity(String name, Address address, String[] phoneNumbers) {
+        this(-1, name, address, phoneNumbers);
+    }
+
+    public Entity(long id, String name, Address address, String[] phoneNumbers) {
+        this.id = id;
         this.name = name;
         this.address = address;
         this.phoneNumbers = phoneNumbers;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getName() {
