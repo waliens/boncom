@@ -13,9 +13,9 @@ public class Main {
         try (Database database = Database.getDatabase()) {
             database.createDatabaseIfNotExist();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Cannot connect to the database: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Error when connecting to the database: " + e.getMessage());
+            System.err.println("Error: " + e.getMessage());
         }
     }
 }

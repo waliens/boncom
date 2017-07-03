@@ -27,14 +27,10 @@ public class Database implements AutoCloseable {
      * Get singleton database object
      * @return database
      */
-    public synchronized static Database getDatabase() {
+    public synchronized static Database getDatabase() throws SQLException {
         if (database == null) {
-            try {
-                database = new Database();
-                database.connection.setAutoCommit(false);
-            } catch (SQLException e) {
-                // will return null
-            }
+            database = new Database();
+            database.connection.setAutoCommit(false);
         }
         return database;
     }
