@@ -21,6 +21,9 @@ import java.util.logging.Level;
  * This is THE (main) class.
  */
 public class Main extends Application {
+    static String ROOT_FXML = "/be/mormont/iacf/boncom/ui/root_scene.fxml";
+    static String STYLE_CSS = "/be/mormont/iacf/boncom/ui/style.css";
+
     public static void main(String[] args) {
         try (Database database = Database.getDatabase()) {
             Lg.getLogger(Main.class).info("Create database (if it does not exist)...");
@@ -41,8 +44,10 @@ public class Main extends Application {
             Platform.exit();
             System.exit(0);
         });
-        Pair<Parent, RootSceneController> rootScene = FXMLBuilder.build("/be/mormont/iacf/boncom/ui/root_scene.fxml");
-        primaryStage.setScene(new Scene(rootScene.getKey()));
+        Pair<Parent, RootSceneController> rootScene = FXMLBuilder.build(ROOT_FXML);
+        Scene scene = new Scene(rootScene.getKey());
+        scene.getStylesheets().add(STYLE_CSS);
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 }
