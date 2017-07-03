@@ -9,7 +9,6 @@ import javafx.util.Pair;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
 
 /**
  * Created by Romain on 28-06-17.
@@ -18,11 +17,11 @@ import java.util.logging.Level;
 public class FXMLBuilder {
     /**
      * Build a JavaFX component from a FXML file.
-     * @param resource The path to the FXML resource file
      * @param <C> The controller class
+     * @param resource The path to the FXML resource file
      * @return The component and its controller
      */
-    public static <C> Pair<Node, C> build(String resource) {
+    public static <C> Pair<Parent, C> build(String resource) {
         try {
             URL url = FXMLBuilder.class.getResource(resource);
             FXMLLoader loader = new FXMLLoader(url);
@@ -40,7 +39,7 @@ public class FXMLBuilder {
      * @param resource The path to the FXML resource file
      * @return The component
      */
-    public static Node buildNode(String resource) {
+    public static Parent buildParent(String resource) {
         try {
             URL url = FXMLBuilder.class.getResource(resource);
             FXMLLoader loader = new FXMLLoader(url);
