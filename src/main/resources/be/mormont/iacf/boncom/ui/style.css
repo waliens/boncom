@@ -19,3 +19,8 @@ Label.title {
 .rootMenuItem:hover {
     -fx-background-color: derive(goldenrod, +20%);
 }
+
+.gpForm {
+    -fx-padding: 5 10 10 5;
+}
+
