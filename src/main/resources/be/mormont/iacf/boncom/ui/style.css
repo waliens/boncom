@@ -3,3 +3,19 @@
 Label.title {
     -fx-font-size: 2em;
 }
+
+.rootMenu {
+    -fx-fill: yellow;
+    -fx-border-stroke: green;
+    -fx-padding: 5;
+}
+
+.rootMenuItem {
+    -fx-font-size: 1.4em;
+    -fx-alignment: center;
+    -fx-background-color: derive(goldenrod, +10%);
+}
+
+.rootMenuItem:hover {
+    -fx-background-color: derive(goldenrod, +20%);
+}
