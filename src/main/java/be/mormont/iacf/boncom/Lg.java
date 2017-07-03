@@ -15,4 +15,5 @@ public class Lg {
     public static Logger getLogger(Class cls) {
         return Logger.getLogger(cls.getName());
     }
+
 }

@@ -94,9 +94,9 @@ public class Database implements AutoCloseable {
 
     public synchronized void createDatabaseIfNotExist() throws SQLException {
         if (!ready()) {
-            Lg.getLogger(Database.class).log(Level.INFO, "Database is not ready... start creation!");
+            Lg.getLogger(Database.class).info("Database is not ready... start creation!");
             createDatabase();
-            Lg.getLogger(Database.class).log(Level.INFO, "Database created...");
+            Lg.getLogger(Database.class).info("Database created...");
         }
     }
 

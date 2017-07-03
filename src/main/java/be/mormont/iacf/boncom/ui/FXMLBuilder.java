@@ -1,5 +1,6 @@
 package be.mormont.iacf.boncom.ui;
 
+import be.mormont.iacf.boncom.Lg;
 import be.mormont.iacf.boncom.exceptions.FxmlLoadingException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -9,7 +10,6 @@ import javafx.util.Pair;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by Romain on 28-06-17.
@@ -28,9 +28,9 @@ public class FXMLBuilder {
             FXMLLoader loader = new FXMLLoader(url);
             Parent root = loader.load();
             C controller = loader.getController();
-            return new Pair<Node, C>(root, controller);
+            return new Pair<>(root, controller);
         } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "Cannot initialize scene '" + resource + "' (cause: " + e.getMessage() + ")");
+            Lg.getLogger(FXMLBuilder.class).severe("Cannot initialize scene '" + resource + "' (cause: " + e.getMessage() + ")");
             throw new FxmlLoadingException(e);
         }
     }
@@ -46,12 +46,9 @@ public class FXMLBuilder {
             FXMLLoader loader = new FXMLLoader(url);
             return loader.load();
         } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "Cannot initialize scene '" + resource + "' (cause: " + e.getMessage() + ")");
+            Lg.getLogger(FXMLBuilder.class).severe("Cannot initialize scene '" + resource + "' (cause: " + e.getMessage() + ")");
             throw new FxmlLoadingException(e);
         }
     }
 
-    private static Logger getLogger() {
-        return Logger.getLogger("be.rmormont.jdrhelper.client.ui.util.FXMLBuilder");
-    }
 }
