@@ -13,4 +13,6 @@ abstract class BaseTable<T> {
     abstract PreparedStatement insertStatement(Connection conn, T object) throws SQLException;
     abstract String selectQuery();
     abstract PreparedStatement selectStatement(Connection conn, long id) throws SQLException;
+    abstract String selectAllQuery();
+    abstract PreparedStatement selectAllStatement(Connection conn) throws SQLException;
 }
