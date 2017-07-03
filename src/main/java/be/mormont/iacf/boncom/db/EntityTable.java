@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 /**
  * Date: 01-07-17
@@ -25,6 +27,23 @@ public class EntityTable extends BaseTable<Entity> {
     static String NAME = "entity";
 
     static long IACF_ENTITY_ID = 1;
+
+    private static Entity makeEntity(ResultSet resultSet) throws SQLException {
+        Address entityAddress = new Address(
+                resultSet.getString(4), // Street
+                resultSet.getString(5), // Number
+                resultSet.getString(6), // Box
+                resultSet.getString(7), // PostCode
+                resultSet.getString(8)  // City
+        );
+
+        return new Entity(
+                resultSet.getLong(1),
+                resultSet.getString(2),
+                entityAddress,
+                resultSet.getString(3).split(",")
+        );
+    }
 
     @Override
     String insertQuery() {
@@ -61,6 +80,16 @@ public class EntityTable extends BaseTable<Entity> {
         return statement;
     }
 
+    @Override
+    String selectAllQuery() {
+        return "SELECT * FROM " + NAME;
+    }
+
+    @Override
+    PreparedStatement selectAllStatement(Connection conn) throws SQLException {
+        return conn.prepareStatement(selectAllQuery());
+    }
+
     public void getEntity(long id, Callback<Entity> callback) {
         try {
             Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<Entity>() {
@@ -73,22 +102,43 @@ public class EntityTable extends BaseTable<Entity> {
                 public Entity success(ResultSet resultSet) {
                     try {
                         if (resultSet.next()) {
-                            Address entityAddress = new Address(
-                                resultSet.getString(3), // Street
-                                resultSet.getString(4), // Number
-                                resultSet.getString(5), // Box
-                                resultSet.getString(6), // PostCode
-                                resultSet.getString(7)  // City
-                            );
-
-                            Entity entity = new Entity(
-                                resultSet.getString(1),
-                                entityAddress,
-                                resultSet.getString(8).split(",")
-                            );
+                            Entity entity = makeEntity(resultSet);
                             callback.success(entity);
                             return entity;
+                        } else {
+                            throw new NoSuchElementException("There is no entity with identifier " + id);
                         }
+                    } catch (Exception e) {
+                        callback.failure(e);
+                    }
+                    return null;
+                }
+
+                @Override
+                public void failure(Exception e) { callback.failure(e); }
+            });
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
+    }
+
+    public void getAllEntities(Callback<ArrayList<Entity>> callback) {
+        try {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<Entity>>() {
+                @Override
+                public PreparedStatement getStatement(Connection conn) throws SQLException {
+                    return selectAllStatement(conn);
+                }
+
+                @Override
+                public ArrayList<Entity> success(ResultSet resultSet) {
+                    try {
+                        ArrayList<Entity> data = new ArrayList<>();
+                        while (resultSet.next()) {
+                            data.add(makeEntity(resultSet));
+                        }
+                        callback.success(data);
+                        return data;
                     } catch (Exception e) {
                         callback.failure(e);
                     }
