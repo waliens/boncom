@@ -3,7 +3,6 @@ package be.mormont.iacf.boncom.ui;
 import be.mormont.iacf.boncom.Lg;
 import be.mormont.iacf.boncom.exceptions.FxmlLoadingException;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.util.Pair;
 

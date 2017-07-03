@@ -4,11 +4,9 @@ import be.mormont.iacf.boncom.Lg;
 import be.mormont.iacf.boncom.data.Address;
 import be.mormont.iacf.boncom.data.Entity;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Level;
 
 
 /**

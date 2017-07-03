@@ -1,6 +1,5 @@
 package be.mormont.iacf.boncom.db;
 
-import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
 
 

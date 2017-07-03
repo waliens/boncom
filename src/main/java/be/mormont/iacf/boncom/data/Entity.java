@@ -1,7 +1,5 @@
 package be.mormont.iacf.boncom.data;
 
-import java.util.ArrayList;
-
 /**
  * Created by Romain on 28-06-17.
  * An entity is for instance a provider.

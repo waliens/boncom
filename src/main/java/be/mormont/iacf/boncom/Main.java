@@ -5,11 +5,8 @@ import be.mormont.iacf.boncom.ui.FXMLBuilder;
 import be.mormont.iacf.boncom.ui.RootSceneController;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
@@ -21,8 +18,8 @@ import java.util.logging.Level;
  * This is THE (main) class.
  */
 public class Main extends Application {
-    static String ROOT_FXML = "/be/mormont/iacf/boncom/ui/root_scene.fxml";
-    static String STYLE_CSS = "/be/mormont/iacf/boncom/ui/style.css";
+    private static String ROOT_FXML = "/be/mormont/iacf/boncom/ui/root_scene.fxml";
+    private static String STYLE_CSS = "/be/mormont/iacf/boncom/ui/style.css";
 
     public static void main(String[] args) {
         try (Database database = Database.getDatabase()) {
