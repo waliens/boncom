@@ -7,7 +7,8 @@ package be.mormont.iacf.boncom.db;
 public interface Callback<T> {
     // Handling failure
     default void onFailure(Exception e) { failure(e); }
-    default void failure(Exception e) {}; // TO IMPLEMENT
+    default void failure(Exception e) { failure(); }
+    default void failure() {} // TO IMPLEMENT
     // Handling success
     default void onSuccess(T object) { success(object); }
     void success(T object); // TO IMPLEMENT
