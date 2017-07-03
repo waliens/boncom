@@ -1,11 +1,14 @@
 package be.mormont.iacf.boncom.db;
 
+import be.mormont.iacf.boncom.Lg;
 import be.mormont.iacf.boncom.data.Address;
 import be.mormont.iacf.boncom.data.Entity;
 
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 
 /**
@@ -91,7 +94,9 @@ public class Database implements AutoCloseable {
 
     public synchronized void createDatabaseIfNotExist() throws SQLException {
         if (!ready()) {
+            Lg.getLogger(Database.class).log(Level.INFO, "Database is not ready... start creation!");
             createDatabase();
+            Lg.getLogger(Database.class).log(Level.INFO, "Database created...");
         }
     }
 
