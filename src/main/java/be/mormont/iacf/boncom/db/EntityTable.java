@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 /**
  * Date: 01-07-17
@@ -24,6 +23,8 @@ public class EntityTable extends BaseTable<Entity> {
     static String FIELD_CITY = "city";
 
     static String NAME = "entity";
+
+    static long IACF_ENTITY_ID = 1;
 
     @Override
     String insertQuery() {
@@ -60,37 +61,53 @@ public class EntityTable extends BaseTable<Entity> {
         return statement;
     }
 
-    public Entity getEntity(long id) throws SQLException {
-        return Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<Entity>() {
-            @Override
-            public PreparedStatement getStatement(Connection conn) throws SQLException {
-                return selectStatement(conn, id);
-            }
+    public void getEntity(long id, Callback<Entity> callback) {
+        try {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<Entity>() {
+                @Override
+                public PreparedStatement getStatement(Connection conn) throws SQLException {
+                    return selectStatement(conn, id);
+                }
 
-            @Override
-            public Entity success(ResultSet resultSet) {
-                try {
-                    if (resultSet.next()) {
-                        Address entityAddress = new Address(
-                            resultSet.getString(3), // Street
-                            resultSet.getString(4), // Number
-                            resultSet.getString(5), // Box
-                            resultSet.getString(6), // PostCode
-                            resultSet.getString(7)  // City
-                        );
+                @Override
+                public Entity success(ResultSet resultSet) {
+                    try {
+                        if (resultSet.next()) {
+                            Address entityAddress = new Address(
+                                resultSet.getString(3), // Street
+                                resultSet.getString(4), // Number
+                                resultSet.getString(5), // Box
+                                resultSet.getString(6), // PostCode
+                                resultSet.getString(7)  // City
+                            );
 
-                        return new Entity(
-                            resultSet.getString(1),
-                            entityAddress,
-                            resultSet.getString(8).split(",")
-                        );
+                            Entity entity = new Entity(
+                                resultSet.getString(1),
+                                entityAddress,
+                                resultSet.getString(8).split(",")
+                            );
+                            callback.success(entity);
+                            return entity;
+                        }
+                    } catch (Exception e) {
+                        callback.failure(e);
                     }
-                } catch (SQLException ignored) { }
-                return null;
-            }
+                    return null;
+                }
 
-            @Override
-            public void failure(Exception e) { }
-        });
+                @Override
+                public void failure(Exception e) { callback.failure(e); }
+            });
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
+    }
+
+    /**
+     * Get IACF entity from database
+     * @param callback The callback
+     */
+    public void getIacf(Callback<Entity> callback) {
+        getEntity(IACF_ENTITY_ID, callback);
     }
 }
