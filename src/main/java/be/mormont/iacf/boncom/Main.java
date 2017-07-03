@@ -3,19 +3,20 @@ package be.mormont.iacf.boncom;
 import be.mormont.iacf.boncom.db.Database;
 
 import java.sql.SQLException;
+import java.util.logging.Level;
 
 /**
  * Created by Romain on 28-06-17.
- * This is a class.
+ * This is THE (main) class.
  */
 public class Main {
     public static void main(String[] args) {
         try (Database database = Database.getDatabase()) {
             database.createDatabaseIfNotExist();
         } catch (SQLException e) {
-            System.err.println("Cannot connect to the database: " + e.getMessage());
+            Lg.getLogger(Main.class).log(Level.SEVERE, "Issue with database", e);
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            Lg.getLogger(Main.class).log(Level.SEVERE, "Unhandled exception", e);
         }
     }
 }
