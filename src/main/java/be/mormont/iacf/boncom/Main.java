@@ -1,7 +1,6 @@
 package be.mormont.iacf.boncom;
 
 import be.mormont.iacf.boncom.db.Database;
-
 import java.sql.SQLException;
 import java.util.logging.Level;
 
@@ -12,7 +11,7 @@ import java.util.logging.Level;
 public class Main {
     public static void main(String[] args) {
         try (Database database = Database.getDatabase()) {
-            Lg.getLogger(Main.class).log(Level.INFO, "Create database if not exists");
+            Lg.getLogger(Main.class).log(Level.INFO, "Create database (if it does not exist)...");
             database.createDatabaseIfNotExist();
         } catch (SQLException e) {
             Lg.getLogger(Main.class).log(Level.SEVERE, "Issue with database", e);
