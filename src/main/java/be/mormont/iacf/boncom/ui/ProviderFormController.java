@@ -5,15 +5,17 @@ import be.mormont.iacf.boncom.data.Address;
 import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.db.Callback;
 import be.mormont.iacf.boncom.db.EntityTable;
+import be.mormont.iacf.boncom.exceptions.FormContentException;
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
@@ -67,8 +69,19 @@ public class ProviderFormController implements Initializable {
             formTitle.setText("Créer un nouveau fournisseur");
             submitButton.setText("Créer");
             submitButton.setOnMouseClicked(event -> {
-                Address address = new Address(streetField.getText(), numberField.getText(), boxField.getText(), postCodeField.getText(), cityField.getText());
-                Entity entity = new Entity(nameField.getText(), address, getPhones());
+                Entity entity;
+                try {
+                    entity = getEntityFromFields();
+                } catch (FormContentException e) {
+                    AlertHelper.popAlert(
+                            Alert.AlertType.ERROR,
+                            "Erreur",
+                            "Impossible d'ajouter l'entité",
+                            "Le formulaire contient des données incorrectes: " + e.getMessage(),
+                            true
+                    );
+                    return;
+                }
                 new EntityTable().insertEntity(entity, new Callback<Entity>() {
                     @Override
                     public void success(Entity object) {
@@ -78,6 +91,13 @@ public class ProviderFormController implements Initializable {
 
                     @Override
                     public void failure(Exception e) {
+                        AlertHelper.popAlert(
+                            Alert.AlertType.ERROR,
+                            "Erreur",
+                            "Impossible d'ajouter l'entité",
+                            "L'ajout a échoué à cause de : " + e.getMessage(),
+                            true
+                        );
                         Lg.getLogger(ProviderFormController.class).log(Level.WARNING, "Couldn't add the entity", e);
                     }
                 });
@@ -107,5 +127,34 @@ public class ProviderFormController implements Initializable {
             phones[i] = phones[i].trim();
         }
         return phones;
+    }
+
+    private Entity getEntityFromFields() {
+        FieldErrorChecker checker = new FieldErrorChecker();
+        String street = streetField.getText().trim();
+        String number = numberField.getText().trim();
+        String box = boxField.getText().trim();
+        String postCode = postCodeField.getText().trim();
+        String city = cityField.getText().trim();
+        String name = nameField.getText().trim();
+
+        checker.put("rue", street);
+        checker.put("numéro", number);
+        checker.put("code postal", postCode);
+        checker.put("ville", city);
+        checker.put("name", name);
+
+        String empty = checker.whichEmpty();
+        if (empty != null) {
+            throw new FormContentException("Le champ '" + empty + "' ne peut pas être vide.");
+        }
+
+        if (box.isEmpty()) {
+            box = null;
+        }
+
+        String[] phones = getPhones();
+        Address address = new Address(street, number, box, postCode, city);
+        return entity = new Entity(name, address, phones.length == 0 ? null : phones);
     }
 }

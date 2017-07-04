@@ -54,6 +54,6 @@ public class Entity {
     }
 
     public String getPhonesAsString() {
-        return String.join(",", phoneNumbers);
+        return phoneNumbers == null ? null : String.join(",", phoneNumbers);
     }
 }
