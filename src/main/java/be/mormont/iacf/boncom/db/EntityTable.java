@@ -59,7 +59,7 @@ public class EntityTable extends BaseTable<Entity> {
     PreparedStatement insertStatement(Connection conn, Entity object) throws SQLException {
         PreparedStatement statement = conn.prepareStatement(insertQuery());
         statement.setString(1, object.getName());
-        statement.setString(2, String.join(",", object.getPhoneNumbers()));
+        statement.setString(2, object.getPhonesAsString());
         statement.setString(3, object.getAddress().getStreet());
         statement.setString(4, object.getAddress().getNumber());
         statement.setString(5, object.getAddress().getBox());
@@ -88,6 +88,28 @@ public class EntityTable extends BaseTable<Entity> {
     @Override
     PreparedStatement selectAllStatement(Connection conn) throws SQLException {
         return conn.prepareStatement(selectAllQuery());
+    }
+
+    public void insertEntity(Entity entity, Callback<Entity> callback) {
+        try {
+            Database.getDatabase().executeUpdatePreparedStatement(new Database.PreparedStatementBuilder<Entity>() {
+                @Override
+                public PreparedStatement getStatement(Connection conn) throws SQLException {
+                    return insertStatement(conn, entity);
+                }
+
+                @Override
+                public Entity success(ResultSet resultSet) {
+                    callback.success(entity);
+                    return entity;
+                }
+
+                @Override
+                public void failure(Exception e) { callback.failure(e); }
+            });
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
     }
 
     public void getEntity(long id, Callback<Entity> callback) {

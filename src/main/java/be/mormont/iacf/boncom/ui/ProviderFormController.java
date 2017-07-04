@@ -1,18 +1,21 @@
 package be.mormont.iacf.boncom.ui;
 
+import be.mormont.iacf.boncom.Lg;
+import be.mormont.iacf.boncom.data.Address;
 import be.mormont.iacf.boncom.data.Entity;
-import javafx.event.EventHandler;
+import be.mormont.iacf.boncom.db.Callback;
+import be.mormont.iacf.boncom.db.EntityTable;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 
 /**
  * Date: 04-07-17
@@ -34,6 +37,8 @@ public class ProviderFormController implements Initializable {
     @FXML private TextField postCodeField;
     @FXML private Button cancelButton;
     @FXML private Button submitButton;
+    @FXML private Label phonesFieldLabel;
+    @FXML private TextField phonesField;
 
     private Entity entity = null;
 
@@ -54,13 +59,29 @@ public class ProviderFormController implements Initializable {
         boxFieldLabel.setText("Boîte");
         cityFieldLabel.setText("Ville");
         postCodeFieldLabel.setText("Code postal");
+        phonesFieldLabel.setText("Téléphone(s)");
         cancelButton.setText("Annuler");
-        cancelButton.setOnMouseClicked(event -> this.closeModal(cancelButton.getParent()));
+        cancelButton.setOnMouseClicked(event -> closeForm());
 
         if (entity == null) {
             formTitle.setText("Créer un nouveau fournisseur");
             submitButton.setText("Créer");
-            submitButton.setOnMouseClicked(event -> System.out.println("Créer"));
+            submitButton.setOnMouseClicked(event -> {
+                Address address = new Address(streetField.getText(), numberField.getText(), boxField.getText(), postCodeField.getText(), cityField.getText());
+                Entity entity = new Entity(nameField.getText(), address, getPhones());
+                new EntityTable().insertEntity(entity, new Callback<Entity>() {
+                    @Override
+                    public void success(Entity object) {
+                        Lg.getLogger(ProviderFormController.class).info("Added new entity '" + entity.getName() + "'");
+                        closeForm();
+                    }
+
+                    @Override
+                    public void failure(Exception e) {
+                        Lg.getLogger(ProviderFormController.class).log(Level.WARNING, "Couldn't add the entity", e);
+                    }
+                });
+            });
         } else {
             formTitle.setText("Mise à jour d'un fournisseur");
             submitButton.setText("Mettre à jour");
@@ -72,15 +93,19 @@ public class ProviderFormController implements Initializable {
             boxField.setText(entity.getAddress().getBox());
             cityField.setText(entity.getAddress().getCity());
             postCodeField.setText(entity.getAddress().getPostCode());
+            phonesField.setText(entity.getPhonesAsString());
         }
     }
 
-    /**
-     * Close the modal
-     * @param source The parent issuing the closing request
-     */
-    private void closeModal(Parent source) {
-        Stage stage = (Stage)source.getScene().getWindow();
-        stage.close();
+    private void closeForm() {
+        FXMLModalHelper.closeModal(cancelButton.getParent());
+    }
+
+    private String[] getPhones() {
+        String[] phones = phonesField.getText().trim().split(",");
+        for (int i = 0; i < phones.length; ++i) {
+            phones[i] = phones[i].trim();
+        }
+        return phones;
     }
 }

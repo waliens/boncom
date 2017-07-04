@@ -46,6 +46,9 @@
 
         <Label fx:id="postCodeFieldLabel" GridPane.columnIndex="2" GridPane.rowIndex="3" />
         <TextField fx:id="postCodeField" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+
+        <Label fx:id="phonesFieldLabel" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <TextField fx:id="phonesField" GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.columnSpan="3"/>
       </GridPane>
    </center>
    <bottom>

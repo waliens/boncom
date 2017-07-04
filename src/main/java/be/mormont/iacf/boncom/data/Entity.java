@@ -52,4 +52,8 @@ public class Entity {
     public void setPhoneNumbers(String[] phoneNumbers) {
         this.phoneNumbers = phoneNumbers;
     }
+
+    public String getPhonesAsString() {
+        return String.join(",", phoneNumbers);
+    }
 }

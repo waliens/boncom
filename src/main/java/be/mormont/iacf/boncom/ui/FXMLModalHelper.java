@@ -21,7 +21,7 @@ public class FXMLModalHelper {
      * @param parent The window owning of the modal
      * @return The node loaded in the modal and its controller
      */
-    public static <T> Pair<Parent, T> popModal(String resource, Window parent) {
+    static <T> Pair<Parent, T> popModal(String resource, Window parent) {
         final Stage modal = new Stage();
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initOwner(parent);
@@ -31,5 +31,14 @@ public class FXMLModalHelper {
         modal.setScene(scene);
         modal.show();
         return modalNode;
+    }
+
+    /**
+     * Close the modal
+     * @param source The parent issuing the closing request
+     */
+    static void closeModal(Parent source) {
+        Stage stage = (Stage)source.getScene().getWindow();
+        stage.close();
     }
 }

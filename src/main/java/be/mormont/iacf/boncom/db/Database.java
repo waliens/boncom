@@ -161,6 +161,21 @@ public class Database implements AutoCloseable {
         }
     }
 
+    public <T> T executeUpdatePreparedStatement(PreparedStatementBuilder<T> builder) throws SQLException {
+        try (PreparedStatement statement = builder.getStatement(connection)) {
+            try {
+                statement.executeUpdate();
+                connection.commit();
+                builder.success(null);
+            } catch (Exception e) {
+                builder.failure(e);
+            }
+        } catch (Exception e) {
+            builder.failure(e);
+        }
+        return null;
+    }
+
     public <T> T executePreparedStatement(PreparedStatementBuilder<T> builder) throws SQLException {
         try (PreparedStatement statement = builder.getStatement(connection)) {
             try (ResultSet resultSet = statement.executeQuery()) {
