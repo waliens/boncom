@@ -16,7 +16,9 @@ import java.util.ResourceBundle;
  */
 public class RootSceneController implements Initializable {
 
-    private static String EDIT_PROVIDER_FXML = "/be/mormont/iacf/boncom/ui/provider_form.fxml";
+    private static String FXML_BASE_PATH = "/be/mormont/iacf/boncom/ui/";
+    private static String EDIT_PROVIDER_FXML = "provider_form.fxml";
+    private static String EDIT_ORDER_FORM_FXML = "order_form_form.fxml";
 
     @FXML private Label titleLabel;
     @FXML private VBox createOrderFormBox;
@@ -30,9 +32,12 @@ public class RootSceneController implements Initializable {
         createOrderFormLabel.setText("Nouveau bon de commande");
         createProviderLabel.setText("Nouveau fournisseur");
 
-        createOrderFormBox.setOnMouseClicked(event -> System.out.println("Create new order form"));
+        createOrderFormBox.setOnMouseClicked(event -> {
+            Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, titleLabel.getScene().getWindow());
+            nodeCtrl.getValue().setOrderForm(null);
+        });
         createProviderBox.setOnMouseClicked(event -> {
-            Pair<Parent, ProviderFormController> nodeCtrl = FXMLModalHelper.popModal(EDIT_PROVIDER_FXML, titleLabel.getScene().getWindow());
+            Pair<Parent, ProviderFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_PROVIDER_FXML, titleLabel.getScene().getWindow());
             nodeCtrl.getValue().setEntity(null);
         });
     }
