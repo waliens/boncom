@@ -48,10 +48,9 @@ public class EntityTable extends BaseTable<Entity> {
     @Override
     String insertQuery() {
         return "INSERT INTO " + NAME + "(" +
-                 EntityTable.FIELD_ENTITY_NAME + ", " + EntityTable.FIELD_PHONE_NUMBERS + ", " +
-                 EntityTable.FIELD_STREET + ", " + EntityTable.FIELD_HOUSE_NUMBER + ", " +
-                 EntityTable.FIELD_BOX + ", " + EntityTable.FIELD_POST_CODE + ", " +
-                 EntityTable.FIELD_CITY  +
+                 FIELD_ENTITY_NAME + ", " + FIELD_PHONE_NUMBERS + ", " + FIELD_STREET + ", " +
+                 FIELD_HOUSE_NUMBER + ", " + FIELD_BOX + ", " + FIELD_POST_CODE + ", " +
+                 FIELD_CITY  +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?)";
     }
 
@@ -99,14 +98,14 @@ public class EntityTable extends BaseTable<Entity> {
                 }
 
                 @Override
-                public Entity success(ResultSet resultSet) {
+                public Entity success(ResultSet resultSet, PreparedStatement statement) {
                     callback.success(entity);
                     return entity;
                 }
 
                 @Override
                 public void failure(Exception e) { callback.failure(e); }
-            });
+            }, true);
         } catch (SQLException e) {
             callback.failure(e);
         }
@@ -121,7 +120,7 @@ public class EntityTable extends BaseTable<Entity> {
                 }
 
                 @Override
-                public Entity success(ResultSet resultSet) {
+                public Entity success(ResultSet resultSet, PreparedStatement statement) {
                     try {
                         if (resultSet.next()) {
                             Entity entity = makeEntity(resultSet);
@@ -153,7 +152,7 @@ public class EntityTable extends BaseTable<Entity> {
                 }
 
                 @Override
-                public ArrayList<Entity> success(ResultSet resultSet) {
+                public ArrayList<Entity> success(ResultSet resultSet, PreparedStatement statement) {
                     try {
                         ArrayList<Entity> data = new ArrayList<>();
                         while (resultSet.next()) {
