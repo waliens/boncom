@@ -4,7 +4,7 @@ package be.mormont.iacf.boncom.data;
  * Created by Romain on 28-06-17.
  * An entity is for instance a provider.
  */
-public class Entity {
+public class Entity implements Comparable<Entity> {
     private long id;
     private String name;
     private Address address;
@@ -55,5 +55,10 @@ public class Entity {
 
     public String getPhonesAsString() {
         return phoneNumbers == null ? null : String.join(",", phoneNumbers);
+    }
+
+    @Override
+    public int compareTo(Entity o) {
+        return (int) (getId() - o.getId());
     }
 }
