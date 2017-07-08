@@ -192,6 +192,20 @@ public class Database implements AutoCloseable {
     }
 
     /**
+     * Return the id of the element last inserted in the database
+     * @param statement The statement which has yielded the key
+     * @return The key, -1 if there no key was created
+     * @throws SQLException exception occurs
+     */
+    static long getLastId(PreparedStatement statement) throws SQLException {
+        ResultSet keys = statement.getGeneratedKeys();
+        if (keys.next()) {
+            return keys.getInt(1);
+        }
+        return -1;
+    }
+
+    /**
      * Callback for building prepared statement
      */
     public interface PreparedStatementBuilder<T> {
