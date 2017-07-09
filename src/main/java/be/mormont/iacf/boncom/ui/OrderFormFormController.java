@@ -10,6 +10,7 @@ import be.mormont.iacf.boncom.util.StringUtil;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -50,7 +51,10 @@ public class OrderFormFormController implements Initializable {
     @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnReference;
     @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnDesignation;
     @FXML private TableColumn<OrderFormEntry, Integer> entriesTabColumnQuantity;
-    @FXML private TableColumn<OrderFormEntry, BigDecimal> entriesTabColumnUnitPrice;
+    @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnUnitPrice;
+    @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnTotal;
+    @FXML private Label totalFieldLabel;
+    @FXML private Label totalField;
 
     private ObservableList<OrderFormEntry> entries;
     private ObservableList<Entity> purchasersList;
@@ -64,6 +68,8 @@ public class OrderFormFormController implements Initializable {
         providerFieldLabel.setText("Fournisseur");
         dateFieldLabel.setText("Date");
         entriesTableLabel.setText("Entrées");
+        totalFieldLabel.setText("Total :");
+        setTotal(new BigDecimal(0));
         cancelButton.setText("Annuler");
         cancelButton.setOnMouseClicked(e -> closeForm());
 
@@ -79,6 +85,13 @@ public class OrderFormFormController implements Initializable {
 
         /* Entries table */
         entries = FXCollections.observableArrayList();
+        entries.addListener((ListChangeListener<OrderFormEntry>) c -> {
+            BigDecimal total = new BigDecimal(0);
+            for (OrderFormEntry entry : entries) {
+                total = total.add(entry.getTotal());
+            }
+            setTotal(total);
+        });
         entriesTable.setItems(entries);
         entriesTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         entriesTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -117,24 +130,28 @@ public class OrderFormFormController implements Initializable {
         entriesTabColumnDesignation.setText("Désignation");
         entriesTabColumnQuantity.setText("Quant.");
         entriesTabColumnUnitPrice.setText("Prix unit.");
+        entriesTabColumnTotal.setText("Total");
+
 
         // display
         entriesTabColumnReference.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getReference()));
         entriesTabColumnDesignation.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getDesignation()));
         entriesTabColumnQuantity.setCellValueFactory(params -> new ReadOnlyObjectWrapper<>(params.getValue().getQuantity()));
-        entriesTabColumnUnitPrice.setCellValueFactory(params -> new ReadOnlyObjectWrapper<>(params.getValue().getUnitPrice()));
+        entriesTabColumnUnitPrice.setCellValueFactory(params -> new SimpleStringProperty(StringUtil.formatCurrency(params.getValue().getUnitPrice())));
+        entriesTabColumnTotal.setCellValueFactory(params -> new SimpleStringProperty(StringUtil.formatCurrency(params.getValue().getTotal())));
 
         /* Columns widths
-         *  Ref  : 1/8
-         *  Desig: 5/8
-         *  Qty  : 1/8
-         *  Unit : 1/8
+         *  Ref  : 1/9
+         *  Desig: 5/9
+         *  Qty  : 1/9
+         *  Unit : 1/9
+         *  Total: 1/9
          */
-        entriesTabColumnReference.prefWidthProperty().bind(entriesTable.widthProperty().divide(8));
-        entriesTabColumnDesignation.prefWidthProperty().bind(entriesTable.widthProperty().divide(8).multiply(5));
-        entriesTabColumnQuantity.prefWidthProperty().bind(entriesTable.widthProperty().divide(8));
-        entriesTabColumnUnitPrice.prefWidthProperty().bind(entriesTable.widthProperty().divide(8));
-
+        entriesTabColumnReference.prefWidthProperty().bind(entriesTable.widthProperty().divide(9));
+        entriesTabColumnDesignation.prefWidthProperty().bind(entriesTable.widthProperty().divide(9).multiply(5));
+        entriesTabColumnQuantity.prefWidthProperty().bind(entriesTable.widthProperty().divide(9));
+        entriesTabColumnUnitPrice.prefWidthProperty().bind(entriesTable.widthProperty().divide(9));
+        entriesTabColumnTotal.prefWidthProperty().bind(entriesTable.widthProperty().divide(9));
 
 
         EntityTable entityTable = new EntityTable();
@@ -269,5 +286,14 @@ public class OrderFormFormController implements Initializable {
 
     private Pair<Parent, OrderFormEntryFormController> popEditEntryForm() {
         return FXMLModalHelper.popModal(RootSceneController.FXML_BASE_PATH + EDIT_ENTRY_FORM_FXML, formTitle.getScene().getWindow());
+    }
+
+
+    /**
+     * Set the formatted total field
+     * @param total The total amount of money to display
+     */
+    private void setTotal(BigDecimal total) {
+        totalField.setText(StringUtil.formatCurrency(total));
     }
 }
