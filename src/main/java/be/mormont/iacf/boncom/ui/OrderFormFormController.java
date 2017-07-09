@@ -30,6 +30,8 @@ public class OrderFormFormController implements Initializable {
     @FXML private ComboBox<Entity> purchaserField;
     @FXML private Label providerFieldLabel;
     @FXML private ComboBox<Entity> providerField;
+    @FXML private Label dateFieldLabel;
+    @FXML private DatePicker dateField;
 
     private ObservableList<Entity> purchasersList;
     private ObservableList<Entity> providersList;
@@ -38,9 +40,10 @@ public class OrderFormFormController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         numberFieldLabel.setText("Numéro");
-        numberFieldMessageLabel.setText("Laisser vide pour que le numéro soit déterminé automatiquement");
+        numberFieldMessageLabel.setText("Si vide, déterminé automatiquement");
         purchaserFieldLabel.setText("Acheteur");
         providerFieldLabel.setText("Fournisseur");
+        dateFieldLabel.setText("Date");
         cancelButton.setText("Annuler");
         cancelButton.setOnMouseClicked(e -> closeForm());
 
@@ -99,6 +102,7 @@ public class OrderFormFormController implements Initializable {
         if (orderForm != null) { // new order form
             formTitle.setText("Mise à jour d'un bon de commande (" + orderForm.getNumber() + ")");
             numberField.setText(Long.toString(orderForm.getNumber()));
+            dateField.setValue(orderForm.getDate());
             submitButton.setText("Update");
         } else {
             formTitle.setText("Créer un nouveau bon de commande");
