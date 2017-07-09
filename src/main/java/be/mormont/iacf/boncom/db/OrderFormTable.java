@@ -27,6 +27,19 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 ") VALUES (?, ?, ?, ?)";
     }
 
+    PreparedStatement insertStatementWithAutoNumber(Connection conn, OrderForm orderForm) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(
+            "INSERT INTO " + NAME + "(" +
+                    FIELD_PROVIDER + ", " + FIELD_PURCHASER + ", " +
+                    FIELD_ISSUE_DATE + ", " + FIELD_NUMBER +
+                    ") SELECT ?, ?, ?, IFNULL(MAX(" + FIELD_NUMBER + "), 0) + 1 FROM " + NAME
+        );
+        statement.setLong(1, orderForm.getProvider().getId());
+        statement.setLong(2, orderForm.getPurchaser().getId());
+        statement.setDate(3, Date.valueOf(orderForm.getDate()));
+        return statement;
+    }
+
     @Override
     PreparedStatement insertStatement(Connection conn, OrderForm object) throws SQLException {
         PreparedStatement statement = conn.prepareStatement(insertQuery());
@@ -57,38 +70,75 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         return null;
     }
 
-    void addOrderForm(OrderForm orderForm, Callback<OrderForm> callback) {
+    private void addOrderFormWithAutoNumber(OrderForm orderForm, Callback<OrderForm> callback) {
         try {
             Database db = Database.getDatabase();
 
-            db.executeUpdatePreparedStatement(new Database.PreparedStatementBuilder<OrderForm>() {
+            db.executeUpdatePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback) {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
-                    return insertStatement(conn, orderForm);
-                }
-
-                @Override
-                public OrderForm success(ResultSet resultSet, PreparedStatement statement) {
-                    try {
-                        long formId = Database.getLastId(statement);
-                        callback.success(orderForm);
-                        db.getConnection().commit();
-                        return orderForm;
-                    } catch (SQLException e) {
-                        callback.failure(e);
-                    }
-                    return orderForm;
-                }
-
-                @Override
-                public void failure(Exception e) {
-                    callback.failure(e);
+                    return insertStatementWithAutoNumber(conn, orderForm);
                 }
             }, false);
 
         } catch (SQLException e) {
             callback.failure(e);
         }
+    }
 
+    private void addOrderFormWithDefinedNumber(OrderForm orderForm, Callback<OrderForm> callback) {
+        try {
+            Database db = Database.getDatabase();
+
+            db.executeUpdatePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback) {
+                @Override
+                public PreparedStatement getStatement(Connection conn) throws SQLException {
+                    return insertStatement(conn, orderForm);
+                }
+            }, false);
+
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
+    }
+
+    /**
+     * Add an order form to the database
+     * @param orderForm The order form to add
+     * @param callback The callback
+     */
+    public void addOrderForm(OrderForm orderForm, Callback<OrderForm> callback) {
+        if (orderForm.isNumberDefined()) {
+            addOrderFormWithDefinedNumber(orderForm, callback);
+        } else {
+            addOrderFormWithAutoNumber(orderForm, callback);
+        }
+    }
+
+    private abstract class AddFormPreparedStatementBuilder implements Database.PreparedStatementBuilder<OrderForm> {
+        private OrderForm orderForm;
+        private Callback<OrderForm> callback;
+
+        public AddFormPreparedStatementBuilder(OrderForm orderForm, Callback<OrderForm> callback) {
+            this.orderForm = orderForm;
+            this.callback = callback;
+        }
+
+        @Override
+        public OrderForm success(ResultSet resultSet, PreparedStatement statement) {
+            try {
+                long formId = Database.getLastId(statement);
+                Database.getDatabase().getConnection().commit();
+                callback.success(orderForm);
+            } catch (SQLException e) {
+                callback.failure(e);
+            }
+            return orderForm;
+        }
+
+        @Override
+        public void failure(Exception e) {
+            callback.failure(e);
+        }
     }
 }

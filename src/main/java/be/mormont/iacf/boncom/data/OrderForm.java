@@ -8,11 +8,28 @@ import java.util.ArrayList;
  * This is a class.
  */
 public class OrderForm {
+    public static long UNDEFINED_NUMBER = -1;
+
     private long number;
     private Entity purchaser;
     private Entity provider;
     private LocalDate date;
     private ArrayList<OrderFormEntry> entries;
+
+    public OrderForm(long number, Entity purchaser, Entity provider, LocalDate date, ArrayList<OrderFormEntry> entries) {
+        this.number = number;
+        this.purchaser = purchaser;
+        this.provider = provider;
+        this.date = date;
+        this.entries = entries;
+    }
+
+    /**
+     * Constructor for order form with undefined number
+     */
+    public OrderForm(Entity purchaser, Entity provider, LocalDate date, ArrayList<OrderFormEntry> entries) {
+        this(UNDEFINED_NUMBER, purchaser, provider, date, entries);
+    }
 
     public Entity getPurchaser() {
         return purchaser;
@@ -52,5 +69,13 @@ public class OrderForm {
 
     public void setNumber(long number) {
         this.number = number;
+    }
+
+    /**
+     * The number is undefined if negative or zero
+     * @return true if the number is defined, false otherwise
+     */
+    public boolean isNumberDefined() {
+        return number > 0;
     }
 }

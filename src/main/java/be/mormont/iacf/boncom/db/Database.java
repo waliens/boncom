@@ -129,7 +129,7 @@ public class Database implements AutoCloseable {
                     OrderFormTable.FIELD_PROVIDER + " INTEGER, " +
                     OrderFormTable.FIELD_PURCHASER + " INTEGER, " +
                     OrderFormTable.FIELD_ISSUE_DATE + " DATE," +
-                    OrderFormTable.FIELD_NUMBER + " INTEGER UNIQUE," +
+                    OrderFormTable.FIELD_NUMBER + " INTEGER," +
                     "PRIMARY KEY (" + OrderFormTable.FIELD_ID + ")," +
                     "FOREIGN KEY (" + OrderFormTable.FIELD_PROVIDER + ") REFERENCES " + EntityTable.NAME + "(" + EntityTable.FIELD_ID + ")," +
                     "FOREIGN KEY (" + OrderFormTable.FIELD_PURCHASER + ") REFERENCES " + EntityTable.NAME + "(" + EntityTable.FIELD_ID + "))"
