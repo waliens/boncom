@@ -24,3 +24,6 @@ Label.title {
     -fx-padding: 5 10 10 5;
 }
 
+.formInfoLabel {
+    -fx-font-size: 0.8em;
+}

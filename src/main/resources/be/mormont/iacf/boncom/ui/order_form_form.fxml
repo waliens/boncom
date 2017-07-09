@@ -26,8 +26,11 @@
 
             <Label fx:id="numberFieldLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
             <TextField fx:id="numberField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <Label fx:id="numberFieldMessageLabel" styleClass="formInfoLabel" GridPane.columnIndex="2" GridPane.rowIndex="0" GridPane.columnSpan="2"/>
             <Label fx:id="purchaserFieldLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
             <ComboBox fx:id="purchaserField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label fx:id="providerFieldLabel" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <ComboBox fx:id="providerField" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
 
         </GridPane>
