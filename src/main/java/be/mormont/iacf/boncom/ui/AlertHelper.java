@@ -22,11 +22,15 @@ public class AlertHelper {
     }
 
     static void popInvalidField(String field, Exception e) {
+        popInvalidField(field, e.getMessage());
+    }
+
+    static void popInvalidField(String field, String cause) {
         AlertHelper.popAlert(
             Alert.AlertType.ERROR,
             "Erreur",
             "Champ invalide",
-            "Le champ '" + field + "' est invalide: " + e.getMessage(),
+            "Le champ '" + field + "' est invalide: " + cause,
             true
         );
     }

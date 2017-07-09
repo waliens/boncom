@@ -34,8 +34,7 @@ public class OrderFormEntryFormController implements Initializable {
     private OrderFormEntry orderFormEntry;
     private OrderFormEntryHandler handler = entry -> {};  // do nothing by default
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    private void refresh() {
         referenceFieldLabel.setText("Référence");
         designationFieldLabel.setText("Désignation");
         quantityFieldLabel.setText("Quantité");
@@ -58,18 +57,22 @@ public class OrderFormEntryFormController implements Initializable {
         } else {
             formTitle.setText("Mise à jour d'une entrée");
             submitButton.setText("Mettre à jour");
-            submitButton.setOnMouseClicked(event -> System.out.println("Mettre à jour"));
             // pre-filling fields
             referenceField.setText(orderFormEntry.getReference());
             designationField.setText(orderFormEntry.getDesignation());
-            quantityField.setText(orderFormEntry.getDesignation());
+            quantityField.setText(Integer.toString(orderFormEntry.getQuantity()));
             unitPriceField.setText(orderFormEntry.getUnitPrice().toString());
-
         }
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        refresh();
     }
 
     public synchronized void setOrderFormEntry(OrderFormEntry orderFormEntry) {
         this.orderFormEntry = orderFormEntry;
+        refresh();
     }
 
     public synchronized void setOrderFormEntryHandler(OrderFormEntryHandler handler) {
@@ -102,6 +105,10 @@ public class OrderFormEntryFormController implements Initializable {
             quantity = Integer.parseInt(strQuantity);
         } catch (NumberFormatException e) {
             AlertHelper.popInvalidField("quantité", e);
+            return null;
+        }
+        if (quantity < 1) {
+            AlertHelper.popInvalidField("quantité", "ne peut pas être négatif ou nul.");
             return null;
         }
 

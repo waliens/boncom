@@ -6,6 +6,7 @@ import be.mormont.iacf.boncom.data.OrderFormEntry;
 import be.mormont.iacf.boncom.db.EntityTable;
 import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.db.UICallback;
+import be.mormont.iacf.boncom.util.StringUtil;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -56,8 +57,7 @@ public class OrderFormFormController implements Initializable {
     private ObservableList<Entity> providersList;
     private OrderForm orderForm = null;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    private void refresh() {
         numberFieldLabel.setText("Numéro");
         numberFieldMessageLabel.setText("Si vide, déterminé automatiquement");
         purchaserFieldLabel.setText("Acheteur");
@@ -94,7 +94,12 @@ public class OrderFormFormController implements Initializable {
         editEntryButton.setOnMouseClicked(event -> {
             Pair<Parent, OrderFormEntryFormController> nodeCtrl = popEditEntryForm();
             nodeCtrl.getValue().setOrderFormEntry(entriesTable.getSelectionModel().getSelectedItem());
-            nodeCtrl.getValue().setOrderFormEntryHandler(entry -> entries.add(entry));
+            nodeCtrl.getValue().setOrderFormEntryHandler(entry -> {
+                // Assumes that the selection cannot change when the user is in the order form entry form !!
+                int index = entriesTable.getSelectionModel().getSelectedIndex();
+                entries.remove(index);
+                entries.add(index, entry);
+            });
         });
 
         createEntryButton.setOnMouseClicked(event -> {
@@ -143,11 +148,11 @@ public class OrderFormFormController implements Initializable {
             @Override
             public void failure(Exception e) {
                 AlertHelper.popAlert(
-                    Alert.AlertType.ERROR,
-                    "Erreur",
-                    "Impossible de récupérer les entités 'acheteur'",
-                    "L'ajout a échoué à cause de : " + e.getMessage(),
-                    true
+                        Alert.AlertType.ERROR,
+                        "Erreur",
+                        "Impossible de récupérer les entités 'acheteur'",
+                        "L'ajout a échoué à cause de : " + e.getMessage(),
+                        true
                 );
             }
         });
@@ -164,11 +169,11 @@ public class OrderFormFormController implements Initializable {
             @Override
             public void failure(Exception e) {
                 AlertHelper.popAlert(
-                    Alert.AlertType.ERROR,
-                    "Erreur",
-                    "Impossible de récupérer les entités 'fournisseur'",
-                    "L'ajout a échoué à cause de : " + e.getMessage(),
-                    true
+                        Alert.AlertType.ERROR,
+                        "Erreur",
+                        "Impossible de récupérer les entités 'fournisseur'",
+                        "L'ajout a échoué à cause de : " + e.getMessage(),
+                        true
                 );
             }
         });
@@ -208,44 +213,49 @@ public class OrderFormFormController implements Initializable {
         }
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        refresh();
+    }
+
     private void closeForm() {
         FXMLModalHelper.closeModal(cancelButton.getParent());
     }
 
     public synchronized void setOrderForm(OrderForm orderForm) {
         this.orderForm = orderForm;
+        refresh();
+
     }
 
     private OrderForm getOrderForm() {
+        String strNumber = StringUtil.getNotEmptyOrNull(numberField.getText());
+        long number;
         try {
-            String numberString = numberField.getText();
-            long number = numberString.isEmpty() ? OrderForm.UNDEFINED_NUMBER : Long.parseLong(numberString);
-            LocalDate date = dateField.getValue();
-            Entity provider = providerField.getValue(),
-                purchaser = purchaserField.getValue();
-
-            if (provider == null || purchaser == null) {
-                AlertHelper.popAlert(
-                    Alert.AlertType.ERROR,
-                    "Erreur",
-                    "Champ invalide",
-                    "Il faut choisir un fournisseur ET un acheteur.",
-                    true
-                );
-                return null;
-            }
-
-            return new OrderForm(number, purchaser, provider, date, new ArrayList<>());
+            number = strNumber == null ? OrderForm.UNDEFINED_NUMBER : Long.parseLong(strNumber);
         } catch (NumberFormatException e) {
-            AlertHelper.popAlert(
-                Alert.AlertType.ERROR,
-                "Erreur",
-                "Champ invalide",
-                "Le nombre passé '" + numberField.getText() + "' est invalide.",
-                true
-            );
+            AlertHelper.popInvalidField("numéro", e);
             return null;
         }
+
+        LocalDate date = dateField.getValue();
+        Entity provider = providerField.getValue(), purchaser = purchaserField.getValue();
+        if (provider == null) {
+            AlertHelper.popEmptyField("fournisseur");
+            return null;
+        }
+        if (purchaser == null) {
+            AlertHelper.popEmptyField("acheteur");
+            return null;
+        }
+
+        ArrayList<OrderFormEntry> addedEntries = new ArrayList<>(entries);
+        if (addedEntries.size() < 1) {
+            AlertHelper.popEmptyField("entrées");
+            return null;
+        }
+
+        return new OrderForm(number, purchaser, provider, date, addedEntries);
     }
 
     /**
