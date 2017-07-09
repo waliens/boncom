@@ -16,7 +16,7 @@ import java.util.ResourceBundle;
  */
 public class RootSceneController implements Initializable {
 
-    private static String FXML_BASE_PATH = "/be/mormont/iacf/boncom/ui/";
+    public static String FXML_BASE_PATH = "/be/mormont/iacf/boncom/ui/";
     private static String EDIT_PROVIDER_FXML = "provider_form.fxml";
     private static String EDIT_ORDER_FORM_FXML = "order_form_form.fxml";
 

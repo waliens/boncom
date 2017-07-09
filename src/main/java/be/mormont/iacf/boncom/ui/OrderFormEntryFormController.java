@@ -68,7 +68,7 @@ public class OrderFormEntryFormController implements Initializable {
         }
     }
 
-    public synchronized void setSetOrderFormEntry(OrderFormEntry orderFormEntry) {
+    public synchronized void setOrderFormEntry(OrderFormEntry orderFormEntry) {
         this.orderFormEntry = orderFormEntry;
     }
 

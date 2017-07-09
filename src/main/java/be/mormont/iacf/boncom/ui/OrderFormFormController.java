@@ -12,7 +12,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.util.Pair;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -26,6 +28,7 @@ import java.util.ResourceBundle;
  * By  : Mormont Romain
  */
 public class OrderFormFormController implements Initializable {
+    private static String EDIT_ENTRY_FORM_FXML = "order_form_entry_form.fxml";
     @FXML private Label formTitle;
     @FXML private Label numberFieldLabel;
     @FXML private Label numberFieldMessageLabel;
@@ -48,6 +51,7 @@ public class OrderFormFormController implements Initializable {
     @FXML private TableColumn<OrderFormEntry, Integer> entriesTabColumnQuantity;
     @FXML private TableColumn<OrderFormEntry, BigDecimal> entriesTabColumnUnitPrice;
 
+    private ObservableList<OrderFormEntry> entries;
     private ObservableList<Entity> purchasersList;
     private ObservableList<Entity> providersList;
     private OrderForm orderForm = null;
@@ -60,30 +64,47 @@ public class OrderFormFormController implements Initializable {
         providerFieldLabel.setText("Fournisseur");
         dateFieldLabel.setText("Date");
         entriesTableLabel.setText("Entrées");
-        deleteEntryButton.setText("Supprimer");
+        cancelButton.setText("Annuler");
         cancelButton.setOnMouseClicked(e -> closeForm());
 
-        purchasersList = FXCollections.observableList(new ArrayList<>());
+        purchasersList = FXCollections.observableArrayList();
         purchaserField.setItems(purchasersList);
         purchaserField.setCellFactory(param -> new EntityListCell());
         purchaserField.setButtonCell(new EntityListCell());
 
-        providersList = FXCollections.observableList(new ArrayList<>());
+        providersList = FXCollections.observableArrayList();
         providerField.setItems(providersList);
         providerField.setCellFactory(param -> new EntityListCell());
         providerField.setButtonCell(new EntityListCell());
 
         /* Entries table */
-        // buttons
-        editEntryButton.setText("Modifier");
-        createEntryButton.setText("Ajouter");
-        cancelButton.setText("Annuler");
-        setTableButtonsDisableProperty(false);
-
-        // selection behavior
+        entries = FXCollections.observableArrayList();
+        entriesTable.setItems(entries);
         entriesTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         entriesTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             setTableButtonsDisableProperty(newValue != null);
+        });
+
+        // buttons
+        editEntryButton.setText("Modifier");
+        createEntryButton.setText("Ajouter");
+        deleteEntryButton.setText("Supprimer");
+        setTableButtonsDisableProperty(false);
+
+        editEntryButton.setOnMouseClicked(event -> {
+            Pair<Parent, OrderFormEntryFormController> nodeCtrl = popEditEntryForm();
+            nodeCtrl.getValue().setOrderFormEntry(entriesTable.getSelectionModel().getSelectedItem());
+            nodeCtrl.getValue().setOrderFormEntryHandler(entry -> entries.add(entry));
+        });
+
+        createEntryButton.setOnMouseClicked(event -> {
+            Pair<Parent, OrderFormEntryFormController> nodeCtrl = popEditEntryForm();
+            nodeCtrl.getValue().setOrderFormEntry(null);
+            nodeCtrl.getValue().setOrderFormEntryHandler(entry -> entries.add(entry));
+        });
+
+        deleteEntryButton.setOnMouseClicked(event -> {
+            entries.remove(entriesTable.getSelectionModel().getSelectedIndex());
         });
 
         // names
@@ -160,6 +181,7 @@ public class OrderFormFormController implements Initializable {
             submitButton.setOnMouseClicked(e -> System.out.println("Update..."));
         } else {
             formTitle.setText("Créer un nouveau bon de commande");
+            dateField.setValue(LocalDate.now());
             submitButton.setText("Créer");
             submitButton.setOnMouseClicked(e -> {
                 OrderForm orderForm = getOrderForm();
@@ -230,8 +252,12 @@ public class OrderFormFormController implements Initializable {
      * Disable or enable the update button of the order form entries table
      * @param v True for enabling false for disabling
      */
-    void setTableButtonsDisableProperty(boolean v) {
+    private void setTableButtonsDisableProperty(boolean v) {
         editEntryButton.setDisable(!v);
         deleteEntryButton.setDisable(!v);
+    }
+
+    private Pair<Parent, OrderFormEntryFormController> popEditEntryForm() {
+        return FXMLModalHelper.popModal(RootSceneController.FXML_BASE_PATH + EDIT_ENTRY_FORM_FXML, formTitle.getScene().getWindow());
     }
 }

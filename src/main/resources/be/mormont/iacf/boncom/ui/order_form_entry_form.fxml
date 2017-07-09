@@ -9,8 +9,7 @@
 <?import javafx.scene.control.TextField?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="be.mormont.iacf.boncom.ui.OrderFormEntryFormController"
-            prefHeight="400.0" prefWidth="600.0">
+            fx:controller="be.mormont.iacf.boncom.ui.OrderFormEntryFormController" prefWidth="600.0" >
     <top>
         <Label fx:id="formTitle" styleClass="title" text="Label" BorderPane.alignment="CENTER" />
     </top>
