@@ -20,4 +20,24 @@ public class AlertHelper {
             alert.show();
         }
     }
+
+    static void popInvalidField(String field, Exception e) {
+        AlertHelper.popAlert(
+            Alert.AlertType.ERROR,
+            "Erreur",
+            "Champ invalide",
+            "Le champ '" + field + "' est invalide: " + e.getMessage(),
+            true
+        );
+    }
+
+    static void popEmptyField(String field) {
+        AlertHelper.popAlert(
+            Alert.AlertType.ERROR,
+            "Erreur",
+            "Champ invalide",
+            "Le champ '" + field + "' ne peut être vide.",
+            true
+        );
+    }
 }
