@@ -6,29 +6,34 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
+<?import javafx.scene.layout.VBox?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.mormont.iacf.boncom.ui.OrderFormFormController">
     <top>
         <Label fx:id="formTitle" styleClass="title" text="Label" BorderPane.alignment="CENTER" />
     </top>
     <center>
+        <VBox>
         <GridPane hgap="5" styleClass="gpForm" BorderPane.alignment="CENTER">
             <columnConstraints>
                 <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="20.0" prefWidth="75.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="20.0" prefWidth="50.0" />
                 <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="20.0" prefWidth="50.0" />
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints />
+                <RowConstraints minHeight="3.0" prefHeight="5.0" vgrow="SOMETIMES" />
             </rowConstraints>
 
             <Label fx:id="numberFieldLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
@@ -40,9 +45,40 @@
             <ComboBox fx:id="providerField" GridPane.columnIndex="3" GridPane.rowIndex="1" />
             <Label fx:id="dateFieldLabel" GridPane.columnIndex="0" GridPane.rowIndex="2" />
             <DatePicker fx:id="dateField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        </GridPane>
+        <Separator GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="4"/>
+        <GridPane hgap="5" styleClass="gpForm" BorderPane.alignment="CENTER">
+            <columnConstraints>
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="20.0" prefWidth="50.0" />
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="20.0" prefWidth="50.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="100.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+
+            <Label fx:id="entriesTableLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <ButtonBar GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="0" >
+                <buttons>
+                    <Button fx:id="deleteEntryButton" mnemonicParsing="false" />
+                    <Button fx:id="editEntryButton" mnemonicParsing="false" />
+                    <Button fx:id="createEntryButton" mnemonicParsing="false" />
+                </buttons>
+            </ButtonBar>
+            <TableView fx:id="entriesTable" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="4" >
+                <columns>
+                   <TableColumn fx:id="entriesTabColumnReference" minWidth="20.0" styleClass="centeredColumn" />
+                   <TableColumn fx:id="entriesTabColumnDesignation" styleClass="leftAlignedColumn" />
+                   <TableColumn fx:id="entriesTabColumnQuantity" minWidth="20.0" styleClass="centeredColumn" />
+                   <TableColumn fx:id="entriesTabColumnUnitPrice" minWidth="20.0" styleClass="centeredColumn" />
+                </columns>
+            </TableView>
 
 
         </GridPane>
+        </VBox>
     </center>
     <bottom>
         <ButtonBar BorderPane.alignment="CENTER">

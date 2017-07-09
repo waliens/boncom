@@ -2,19 +2,21 @@ package be.mormont.iacf.boncom.ui;
 
 import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
+import be.mormont.iacf.boncom.data.OrderFormEntry;
 import be.mormont.iacf.boncom.db.EntityTable;
 import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.db.UICallback;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.util.Callback;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
@@ -36,6 +38,15 @@ public class OrderFormFormController implements Initializable {
     @FXML private ComboBox<Entity> providerField;
     @FXML private Label dateFieldLabel;
     @FXML private DatePicker dateField;
+    @FXML private Label entriesTableLabel;
+    @FXML private Button deleteEntryButton;
+    @FXML private Button editEntryButton;
+    @FXML private Button createEntryButton;
+    @FXML private TableView<OrderFormEntry> entriesTable;
+    @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnReference;
+    @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnDesignation;
+    @FXML private TableColumn<OrderFormEntry, Integer> entriesTabColumnQuantity;
+    @FXML private TableColumn<OrderFormEntry, BigDecimal> entriesTabColumnUnitPrice;
 
     private ObservableList<Entity> purchasersList;
     private ObservableList<Entity> providersList;
@@ -48,7 +59,8 @@ public class OrderFormFormController implements Initializable {
         purchaserFieldLabel.setText("Acheteur");
         providerFieldLabel.setText("Fournisseur");
         dateFieldLabel.setText("Date");
-        cancelButton.setText("Annuler");
+        entriesTableLabel.setText("Entrées");
+        deleteEntryButton.setText("Supprimer");
         cancelButton.setOnMouseClicked(e -> closeForm());
 
         purchasersList = FXCollections.observableList(new ArrayList<>());
@@ -60,6 +72,44 @@ public class OrderFormFormController implements Initializable {
         providerField.setItems(providersList);
         providerField.setCellFactory(param -> new EntityListCell());
         providerField.setButtonCell(new EntityListCell());
+
+        /* Entries table */
+        // buttons
+        editEntryButton.setText("Modifier");
+        createEntryButton.setText("Ajouter");
+        cancelButton.setText("Annuler");
+        setTableButtonsDisableProperty(false);
+
+        // selection behavior
+        entriesTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        entriesTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            setTableButtonsDisableProperty(newValue != null);
+        });
+
+        // names
+        entriesTabColumnReference.setText("Réf.");
+        entriesTabColumnDesignation.setText("Désignation");
+        entriesTabColumnQuantity.setText("Quant.");
+        entriesTabColumnUnitPrice.setText("Prix unit.");
+
+        // display
+        entriesTabColumnReference.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getReference()));
+        entriesTabColumnDesignation.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getDesignation()));
+        entriesTabColumnQuantity.setCellValueFactory(params -> new ReadOnlyObjectWrapper<>(params.getValue().getQuantity()));
+        entriesTabColumnUnitPrice.setCellValueFactory(params -> new ReadOnlyObjectWrapper<>(params.getValue().getUnitPrice()));
+
+        /* Columns widths
+         *  Ref  : 1/8
+         *  Desig: 5/8
+         *  Qty  : 1/8
+         *  Unit : 1/8
+         */
+        entriesTabColumnReference.prefWidthProperty().bind(entriesTable.widthProperty().divide(8));
+        entriesTabColumnDesignation.prefWidthProperty().bind(entriesTable.widthProperty().divide(8).multiply(5));
+        entriesTabColumnQuantity.prefWidthProperty().bind(entriesTable.widthProperty().divide(8));
+        entriesTabColumnUnitPrice.prefWidthProperty().bind(entriesTable.widthProperty().divide(8));
+
+
 
         EntityTable entityTable = new EntityTable();
         entityTable.getIacf(new be.mormont.iacf.boncom.db.Callback<Entity>() {
@@ -174,5 +224,14 @@ public class OrderFormFormController implements Initializable {
             );
             return null;
         }
+    }
+
+    /**
+     * Disable or enable the update button of the order form entries table
+     * @param v True for enabling false for disabling
+     */
+    void setTableButtonsDisableProperty(boolean v) {
+        editEntryButton.setDisable(!v);
+        deleteEntryButton.setDisable(!v);
     }
 }

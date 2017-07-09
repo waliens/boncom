@@ -27,3 +27,11 @@ Label.title {
 .formInfoLabel {
     -fx-font-size: 0.8em;
 }
+
+.centeredColumn {
+    -fx-alignment: CENTER;
+}
+
+.leftAlignedColumn {
+    -fx-alignment: CENTER-LEFT;
+}
