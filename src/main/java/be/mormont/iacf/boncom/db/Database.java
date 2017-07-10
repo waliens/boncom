@@ -143,9 +143,9 @@ public class Database implements AutoCloseable {
                     OrderFormEntryTable.FIELD_REFERENCE + " VARCHAR(255)," +
                     OrderFormEntryTable.FIELD_DESIGNATION + " VARCHAR(255)," +
                     OrderFormEntryTable.FIELD_QUANTITY + " INTEGER UNSIGNED," +
-                    OrderFormEntryTable.FIELD_UNIT_PRICE + " INTEGER," +
-                    "PRIMARY KEY (" + OrderFormEntryTable.FIELD_ID + ", " + OrderFormEntryTable.FIELD_ORDER_FORM + ")," +
-                    "FOREIGN KEY (" + OrderFormEntryTable.FIELD_ID + ") REFERENCES " + OrderFormTable.NAME + "(" + OrderFormTable.FIELD_ID + "))"
+                    OrderFormEntryTable.FIELD_UNIT_PRICE + " DECIMAL(20, 2)," +
+                    "PRIMARY KEY (" + OrderFormEntryTable.FIELD_ID + ")," +
+                    "FOREIGN KEY (" + OrderFormEntryTable.FIELD_ORDER_FORM + ") REFERENCES " + OrderFormTable.NAME + "(" + OrderFormTable.FIELD_ID + "))"
             );
 
             // insert default data
@@ -170,9 +170,11 @@ public class Database implements AutoCloseable {
                 }
                 builder.success(null, statement);
             } catch (Exception e) {
+                connection.rollback();
                 builder.failure(e);
             }
         } catch (Exception e) {
+            connection.rollback();
             builder.failure(e);
         }
         return null;

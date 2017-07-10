@@ -210,9 +210,7 @@ public class OrderFormFormController implements Initializable {
                 if (orderForm != null) {
                     new OrderFormTable().addOrderForm(orderForm, new UICallback<OrderForm>() {
                         @Override
-                        public void success(OrderForm object) {
-                            closeForm();
-                        }
+                        public void success(OrderForm object) { closeForm(); }
 
                         @Override
                         public void failure(Exception e) {

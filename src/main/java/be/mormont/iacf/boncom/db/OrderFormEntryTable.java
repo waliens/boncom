@@ -1,10 +1,20 @@
 package be.mormont.iacf.boncom.db;
 
+import be.mormont.iacf.boncom.data.OrderFormEntry;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Date: 01-07-17
  * By  : Mormont Romain
  */
-public class OrderFormEntryTable {
+public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
     static String FIELD_ID = "id";
     static String FIELD_ORDER_FORM = "order_form";
     static String FIELD_REFERENCE = "reference";
@@ -13,4 +23,91 @@ public class OrderFormEntryTable {
     static String FIELD_UNIT_PRICE = "unit_price";
 
     static final String NAME = "order_form_entry";
+
+
+    @Override
+    String insertQuery() {
+        return "INSERT INTO " + NAME + "(" +
+                FIELD_ORDER_FORM + ", " + FIELD_REFERENCE + ", " + FIELD_DESIGNATION + ", " +
+                FIELD_QUANTITY + ", " + FIELD_UNIT_PRICE +
+                ") VALUES (?, ?, ?, ?, ?)";
+    }
+
+    @Override
+    PreparedStatement insertStatement(Connection conn, OrderFormEntry object) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(insertQuery());
+        statement.setLong(1, object.getOrderFormId());
+        statement.setString(2, object.getReference());
+        statement.setString(3, object.getDesignation());
+        statement.setLong(4, object.getQuantity());
+        statement.setBigDecimal(5, object.getUnitPrice());
+        return statement;
+    }
+
+    @Override
+    String selectQuery() {
+        return "SELECT * FROM " + NAME + " WHERE " + FIELD_ID + "=?";
+    }
+
+    @Override
+    PreparedStatement selectStatement(Connection conn, long id) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(selectQuery());
+        statement.setLong(1, id);
+        return statement;
+    }
+
+    @Override
+    String selectAllQuery() {
+        return "SELECT * FROM " + NAME;
+    }
+
+    @Override
+    PreparedStatement selectAllStatement(Connection conn) throws SQLException {
+        return conn.prepareStatement(selectAllQuery());
+    }
+
+    String addBatchQuery(int n) {
+        return "INSERT INTO " + NAME + "(" +
+                FIELD_ORDER_FORM + ", " + FIELD_REFERENCE + ", " + FIELD_DESIGNATION + ", " +
+                FIELD_QUANTITY + ", " + FIELD_UNIT_PRICE +
+                ") VALUES " + String.join(", ", Collections.nCopies(n, "(?, ?, ?, ?, ?)"));
+    }
+
+    PreparedStatement addBatchStatement(Connection conn, List<OrderFormEntry> entries) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(addBatchQuery(entries.size()));
+        int nParams = 5;
+        for (int i = 0; i < entries.size(); ++i) {
+            OrderFormEntry entry = entries.get(i);
+            statement.setLong(i * nParams + 1, entry.getOrderFormId());
+            statement.setString(i * nParams + 2, entry.getReference());
+            statement.setString(i * nParams + 3, entry.getDesignation());
+            statement.setInt(i * nParams + 4, entry.getQuantity());
+            statement.setBigDecimal(i * nParams + 5, entry.getUnitPrice());
+        }
+        return statement;
+    }
+
+    void addOrderFormEntries(ArrayList<OrderFormEntry> entries, Callback<ArrayList<OrderFormEntry>> callback, boolean commit) {
+        try {
+            Database.getDatabase().executeUpdatePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<OrderFormEntry>>() {
+                @Override
+                public PreparedStatement getStatement(Connection conn) throws SQLException {
+                    return addBatchStatement(conn, entries);
+                }
+
+                @Override
+                public ArrayList<OrderFormEntry> success(ResultSet resultSet, PreparedStatement statement) {
+                    callback.success(entries);
+                    return entries;
+                }
+
+                @Override
+                public void failure(Exception e) {
+                    callback.failure(e);
+                }
+            }, commit);
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
+    }
 }

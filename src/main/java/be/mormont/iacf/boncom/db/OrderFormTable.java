@@ -2,8 +2,10 @@ package be.mormont.iacf.boncom.db;
 
 import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
+import be.mormont.iacf.boncom.data.OrderFormEntry;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 
 /**
@@ -70,11 +72,11 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         return null;
     }
 
-    private void addOrderFormWithAutoNumber(OrderForm orderForm, Callback<OrderForm> callback) {
+    private void addOrderFormWithAutoNumber(OrderForm orderForm, Callback<OrderForm> callback, boolean commit) {
         try {
             Database db = Database.getDatabase();
 
-            db.executeUpdatePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback) {
+            db.executeUpdatePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback, commit) {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return insertStatementWithAutoNumber(conn, orderForm);
@@ -86,11 +88,15 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         }
     }
 
-    private void addOrderFormWithDefinedNumber(OrderForm orderForm, Callback<OrderForm> callback) {
+    private void addOrderFormWithAutoNumber(OrderForm orderForm, Callback<OrderForm> callback) {
+        addOrderFormWithAutoNumber(orderForm, callback, true);
+    }
+
+    private void addOrderFormWithDefinedNumber(OrderForm orderForm, Callback<OrderForm> callback, boolean commit) {
         try {
             Database db = Database.getDatabase();
 
-            db.executeUpdatePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback) {
+            db.executeUpdatePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback, commit) {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return insertStatement(conn, orderForm);
@@ -102,34 +108,58 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         }
     }
 
+    private void addOrderFormWithDefinedNumber(OrderForm orderForm, Callback<OrderForm> callback) {
+        addOrderFormWithDefinedNumber(orderForm, callback, true);
+    }
+
     /**
      * Add an order form to the database
      * @param orderForm The order form to add
      * @param callback The callback
      */
     public void addOrderForm(OrderForm orderForm, Callback<OrderForm> callback) {
+        addOrderForm(orderForm, callback, true);
+    }
+
+    public void addOrderForm(OrderForm orderForm, Callback<OrderForm> callback, boolean commit) {
         if (orderForm.isNumberDefined()) {
-            addOrderFormWithDefinedNumber(orderForm, callback);
+            addOrderFormWithDefinedNumber(orderForm, callback, commit);
         } else {
-            addOrderFormWithAutoNumber(orderForm, callback);
+            addOrderFormWithAutoNumber(orderForm, callback, commit);
         }
     }
 
     private abstract class AddFormPreparedStatementBuilder implements Database.PreparedStatementBuilder<OrderForm> {
         private OrderForm orderForm;
         private Callback<OrderForm> callback;
+        private boolean commit;
 
-        public AddFormPreparedStatementBuilder(OrderForm orderForm, Callback<OrderForm> callback) {
+        public AddFormPreparedStatementBuilder(OrderForm orderForm, Callback<OrderForm> callback, boolean commit) {
             this.orderForm = orderForm;
             this.callback = callback;
+            this.commit = commit;
         }
 
         @Override
         public OrderForm success(ResultSet resultSet, PreparedStatement statement) {
             try {
                 long formId = Database.getLastId(statement);
-                Database.getDatabase().getConnection().commit();
-                callback.success(orderForm);
+
+                for (OrderFormEntry entry: orderForm.getEntries()) {
+                    entry.setOrderFormId(formId);
+                }
+
+                new OrderFormEntryTable().addOrderFormEntries(orderForm.getEntries(), new Callback<ArrayList<OrderFormEntry>>() {
+                    @Override
+                    public void success(ArrayList<OrderFormEntry> object) {
+                        callback.success(orderForm);
+                    }
+
+                    @Override
+                    public void failure(Exception e) {
+                        callback.failure(e);
+                    }
+                }, commit);
             } catch (SQLException e) {
                 callback.failure(e);
             }

@@ -7,16 +7,24 @@ import java.math.BigDecimal;
  * This is a class.
  */
 public class OrderFormEntry {
+    private long id;
+    private long orderFormId;
     private String reference;
     private String designation;
     private int quantity;
     private BigDecimal unitPrice;
 
-    public OrderFormEntry(String reference, String designation, int quantity, BigDecimal unitPrice) {
+    public OrderFormEntry(long id, long orderFormId, String reference, String designation, int quantity, BigDecimal unitPrice) {
+        this.id = id;
+        this.orderFormId = orderFormId;
         this.reference = reference;
         this.designation = designation;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
+    }
+
+    public OrderFormEntry(String reference, String designation, int quantity, BigDecimal unitPrice) {
+        this(-1, -1, reference, designation, quantity, unitPrice);
     }
 
     public BigDecimal getTotal() {
@@ -53,5 +61,21 @@ public class OrderFormEntry {
 
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getOrderFormId() {
+        return orderFormId;
+    }
+
+    public void setOrderFormId(long orderFormId) {
+        this.orderFormId = orderFormId;
     }
 }
