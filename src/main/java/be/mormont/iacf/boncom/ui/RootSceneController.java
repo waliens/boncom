@@ -23,14 +23,17 @@ public class RootSceneController implements Initializable {
     @FXML private Label titleLabel;
     @FXML private VBox createOrderFormBox;
     @FXML private VBox createProviderBox;
+    @FXML private VBox exportOrderFormBox;
     @FXML private Label createOrderFormLabel;
     @FXML private Label createProviderLabel;
+    @FXML private Label exportOrderFormLabel;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         titleLabel.setText("Bon de commandes");
         createOrderFormLabel.setText("Nouveau bon de commande");
         createProviderLabel.setText("Nouveau fournisseur");
+        exportOrderFormLabel.setText("Exporter un bon de commande");
 
         createOrderFormBox.setOnMouseClicked(event -> {
             Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, titleLabel.getScene().getWindow());
@@ -39,6 +42,9 @@ public class RootSceneController implements Initializable {
         createProviderBox.setOnMouseClicked(event -> {
             Pair<Parent, ProviderFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_PROVIDER_FXML, titleLabel.getScene().getWindow());
             nodeCtrl.getValue().setEntity(null);
+        });
+        exportOrderFormBox.setOnMouseClicked(event -> {
+            System.out.println("export");
         });
     }
 }
