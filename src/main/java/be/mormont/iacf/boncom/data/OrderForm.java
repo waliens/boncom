@@ -1,6 +1,7 @@
 package be.mormont.iacf.boncom.data;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 /**
@@ -50,7 +51,6 @@ public class OrderForm {
     public LocalDate getDate() {
         return date;
     }
-
     public void setDate(LocalDate date) {
         this.date = date;
     }
