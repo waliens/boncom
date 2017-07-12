@@ -1,12 +1,16 @@
 package be.mormont.iacf.boncom.db;
 
+import be.mormont.iacf.boncom.data.Address;
 import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
 import com.sun.org.apache.xpath.internal.operations.Or;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -65,12 +69,34 @@ public class OrderFormTable extends BaseTable<OrderForm> {
 
     @Override
     String selectAllQuery() {
-        return null;
-    }
+        String providerSelect = "SELECT " +
+                    EntityTable.FIELD_ID + " AS provider_id, " +
+                    EntityTable.FIELD_ENTITY_NAME + " AS provider_name, " +
+                    EntityTable.FIELD_STREET + " AS provider_street, " +
+                    EntityTable.FIELD_HOUSE_NUMBER + " AS provider_number, " +
+                    EntityTable.FIELD_BOX + " AS provider_box, " +
+                    EntityTable.FIELD_CITY + " AS provider_city, " +
+                    EntityTable.FIELD_POST_CODE + " AS provider_post_code, " +
+                    EntityTable.FIELD_PHONE_NUMBERS + " AS provider_phone " +
+                " FROM " + EntityTable.NAME;
+        String purchaserSelect = "SELECT " +
+                EntityTable.FIELD_ID + " AS purchaser_id, " +
+                EntityTable.FIELD_ENTITY_NAME + " AS purchaser_name, " +
+                EntityTable.FIELD_STREET + " AS purchaser_street, " +
+                EntityTable.FIELD_HOUSE_NUMBER + " AS purchaser_number, " +
+                EntityTable.FIELD_BOX + " AS purchaser_box, " +
+                EntityTable.FIELD_CITY + " AS purchaser_city, " +
+                EntityTable.FIELD_POST_CODE + " AS purchaser_post_code, " +
+                EntityTable.FIELD_PHONE_NUMBERS + " AS purchaser_phone " +
+                " FROM " + EntityTable.NAME;
+        return "SELECT * FROM " + NAME +
+                " INNER JOIN (" + providerSelect + ") as provider ON " + NAME + "." + FIELD_PROVIDER + "=provider.provider_id"  +
+                " INNER JOIN (" + purchaserSelect + ") as purchaser ON " + NAME + "." + FIELD_PURCHASER  + "=purchaser.purchaser_id";
+     }
 
     @Override
     PreparedStatement selectAllStatement(Connection conn) throws SQLException {
-        return null;
+        return conn.prepareStatement(selectAllQuery());
     }
 
     private void addOrderFormWithAutoNumber(OrderForm orderForm, Callback<OrderForm> callback, boolean commit) {
@@ -130,6 +156,35 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         }
     }
 
+    private Entity getEntityWithOffset(ResultSet set, int offset) throws SQLException{
+        Address address = new Address(
+            set.getString(offset + 3),
+            set.getString(offset + 4),
+            set.getString(offset + 5),
+            set.getString(offset + 6),
+            set.getString(offset + 7)
+        );
+        return new Entity(
+            set.getLong(offset + 1),
+            set.getString(offset + 2),
+            address,
+            set.getString(offset + 8).split(",")
+        );
+    }
+    private OrderForm makeShallowOrderForm(ResultSet set) throws SQLException {
+        final int OFFSET_PROVIDER = 5, OFFSET_PURCHASER = OFFSET_PROVIDER + 8;
+        Date date = set.getDate(4);
+        return new OrderForm(
+            set.getLong(1),
+            set.getLong(5),
+            getEntityWithOffset(set, OFFSET_PURCHASER),
+            getEntityWithOffset(set, OFFSET_PROVIDER),
+            date.toLocalDate(),
+            new ArrayList<>()
+        );
+    }
+
+
     public void getAllOrderForms(Callback<ArrayList<OrderForm>> callback) {
         try {
             Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<OrderForm>>() {
@@ -141,7 +196,29 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 @Override
                 public ArrayList<OrderForm> success(ResultSet resultSet, PreparedStatement statement) {
                     ArrayList<OrderForm> list = new ArrayList<>();
-                    callback.success(list);
+                    OrderFormEntryTable orderFormEntryTable = new OrderFormEntryTable();
+                    try {
+                        while (resultSet.next()) {
+                            OrderForm form = makeShallowOrderForm(resultSet);
+                            orderFormEntryTable.getOrderFormEntries(form, new Callback<ArrayList<OrderFormEntry>>() {
+                                @Override
+                                public void success(ArrayList<OrderFormEntry> object) {
+                                    form.setEntries(object);
+                                }
+
+                                @Override
+                                public void failure(Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+
+                            list.add(form);
+                        }
+                        callback.success(list);
+                    } catch (RuntimeException | SQLException e) {
+                        callback.failure(e);
+                        e.printStackTrace();
+                    }
                     return list;
                 }
 
@@ -152,6 +229,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
             });
         } catch (SQLException e) {
             callback.failure(e);
+            e.printStackTrace();
         }
     }
 

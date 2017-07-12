@@ -23,7 +23,6 @@
            </columnConstraints>
            <rowConstraints>
                <RowConstraints minHeight="50.0" prefHeight="75.0" vgrow="SOMETIMES" />
-               <RowConstraints minHeight="50.0" prefHeight="75.0" vgrow="SOMETIMES" />
            </rowConstraints>
 
            <VBox fx:id="createOrderFormBox" styleClass="rootMenuItem" GridPane.columnIndex="0" GridPane.rowIndex="0">
@@ -31,9 +30,6 @@
            </VBox>
            <VBox fx:id="createProviderBox" styleClass="rootMenuItem" GridPane.columnIndex="1" GridPane.rowIndex="0">
                <Label fx:id="createProviderLabel" />
-           </VBox>
-           <VBox fx:id="exportOrderFormBox" styleClass="rootMenuItem" GridPane.columnIndex="0" GridPane.rowIndex="1">
-               <Label fx:id="exportOrderFormLabel" />
            </VBox>
        </GridPane>
    </center>

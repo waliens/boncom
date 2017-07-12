@@ -44,10 +44,8 @@ public class RootSceneController implements Initializable {
     @FXML private Label titleLabel;
     @FXML private VBox createOrderFormBox;
     @FXML private VBox createProviderBox;
-    @FXML private VBox exportOrderFormBox;
     @FXML private Label createOrderFormLabel;
     @FXML private Label createProviderLabel;
-    @FXML private Label exportOrderFormLabel;
 
     // order form
     @FXML private Label orderFormsLabel;
@@ -67,7 +65,6 @@ public class RootSceneController implements Initializable {
         titleLabel.setText("Bon de commandes");
         createOrderFormLabel.setText("Nouveau bon de commande");
         createProviderLabel.setText("Nouveau fournisseur");
-        exportOrderFormLabel.setText("Exporter un bon de commande");
 
         createOrderFormBox.setOnMouseClicked(event -> {
             Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, titleLabel.getScene().getWindow());
@@ -76,9 +73,6 @@ public class RootSceneController implements Initializable {
         createProviderBox.setOnMouseClicked(event -> {
             Pair<Parent, ProviderFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_PROVIDER_FXML, titleLabel.getScene().getWindow());
             nodeCtrl.getValue().setEntity(null);
-        });
-        exportOrderFormBox.setOnMouseClicked(event -> {
-            System.out.println("export");
         });
 
         // order forms
@@ -93,14 +87,10 @@ public class RootSceneController implements Initializable {
         );
 
         orderFormEditButton.setOnMouseClicked(event -> {
-            Pair<Parent, OrderFormFormController> nodeCtrl = FXMLBuilder.build(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML);
-            int selectedIdx = orderFormsTable.getSelectionModel().getSelectedIndex();
+            Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, titleLabel.getScene().getWindow());
             OrderForm selected = orderFormsTable.getSelectionModel().getSelectedItem();
             nodeCtrl.getValue().setOrderForm(selected, form -> {
-                // Assumes that the selection cannot change when the user is in the order form entry form !!
-                int index = orderFormsTable.getSelectionModel().getSelectedIndex();
-                orderForms.remove(index);
-                orderForms.add(index, form);
+
             });
         });
 
@@ -118,7 +108,6 @@ public class RootSceneController implements Initializable {
         orderFormTotalColumn.setCellValueFactory(params -> new SimpleStringProperty(StringUtil.formatCurrency(params.getValue().getTotal())));
         orderFormProviderColumn.setCellValueFactory(params -> new SimpleStringProperty(params.getValue().getProvider().getName()));
 
-
         // columns
         orderFormNumberColumn.setText("Numéro");
         orderFormDateColumn.setText("Date");
@@ -129,18 +118,18 @@ public class RootSceneController implements Initializable {
         // data
         orderForms = FXCollections.observableArrayList();
         orderFormsTable.setItems(orderForms);
-        orderForms.addAll(DEBUG_getOrderForm());
-//        new OrderFormTable().getAllOrderForms(new Callback<ArrayList<OrderForm>>() {
-//            @Override
-//            public void success(ArrayList<OrderForm> object) {
-//                orderForms.addAll(object);
-//            }
-//
-//            @Override
-//            public void failure(Exception e) {
-//                AlertHelper.popException(e);
-//            }
-//        });
+        //orderForms.addAll(DEBUG_getOrderForm());
+        new OrderFormTable().getAllOrderForms(new Callback<ArrayList<OrderForm>>() {
+            @Override
+            public void success(ArrayList<OrderForm> object) {
+                orderForms.addAll(object);
+            }
+
+            @Override
+            public void failure(Exception e) {
+                AlertHelper.popException(e);
+            }
+        });
     }
 
     private void setTableButtonsDisableProperty(boolean enable) {

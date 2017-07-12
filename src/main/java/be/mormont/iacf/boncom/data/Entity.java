@@ -61,4 +61,14 @@ public class Entity implements Comparable<Entity> {
     public int compareTo(Entity o) {
         return (int) (getId() - o.getId());
     }
+
+    @Override
+    public int hashCode() {
+        return (int)id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Entity && ((Entity) obj).compareTo(this) == 0;
+    }
 }

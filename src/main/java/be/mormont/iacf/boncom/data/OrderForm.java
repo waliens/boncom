@@ -9,21 +9,27 @@ import java.util.ArrayList;
  * Created by Romain on 28-06-17.
  * This is a class.
  */
-public class OrderForm {
+public class OrderForm implements Comparable<OrderForm> {
     public static long UNDEFINED_NUMBER = -1;
 
+    private long id;
     private long number;
     private Entity purchaser;
     private Entity provider;
     private LocalDate date;
     private ArrayList<OrderFormEntry> entries;
 
-    public OrderForm(long number, Entity purchaser, Entity provider, LocalDate date, ArrayList<OrderFormEntry> entries) {
+    public OrderForm(long id, long number, Entity purchaser, Entity provider, LocalDate date, ArrayList<OrderFormEntry> entries) {
         this.number = number;
         this.purchaser = purchaser;
         this.provider = provider;
         this.date = date;
         this.entries = entries;
+        this.id = id;
+    }
+
+    public OrderForm(long number, Entity purchaser, Entity provider, LocalDate date, ArrayList<OrderFormEntry> entries) {
+        this(-1, number, purchaser, provider, date, entries);
     }
 
     /**
@@ -86,5 +92,28 @@ public class OrderForm {
             total = total.add(e.getTotal());
         }
         return total;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int)id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof OrderForm && ((OrderForm) obj).compareTo(this) == 0;
+    }
+
+    @Override
+    public int compareTo(OrderForm o) {
+        return (int) (getId() - o.getId());
     }
 }

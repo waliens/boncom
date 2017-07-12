@@ -1,6 +1,8 @@
 package be.mormont.iacf.boncom.db;
 
+import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
+import com.sun.org.apache.regexp.internal.RE;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -106,6 +108,51 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
                     callback.failure(e);
                 }
             }, commit);
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
+    }
+
+    private OrderFormEntry makeEntry(ResultSet set) throws SQLException {
+        //long id, long orderFormId, String reference, String designation, int quantity, BigDecimal unitPrice
+        return new OrderFormEntry(
+            set.getLong(1),
+            set.getLong(2),
+            set.getString(3),
+            set.getString(4),
+            set.getInt(5),
+            set.getBigDecimal(6)
+        );
+    }
+
+    void getOrderFormEntries(OrderForm orderForm, Callback<ArrayList<OrderFormEntry>> callback) {
+        try {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<OrderFormEntry>>() {
+                @Override
+                public PreparedStatement getStatement(Connection conn) throws SQLException {
+                    return selectStatement(conn, orderForm.getId());
+                }
+
+                @Override
+                public ArrayList<OrderFormEntry> success(ResultSet resultSet, PreparedStatement statement) {
+                    ArrayList<OrderFormEntry> entries = new ArrayList<>();
+                    try {
+                        while(resultSet.next()) {
+                            entries.add(makeEntry(resultSet));
+                        }
+                        callback.success(entries);
+                    } catch (SQLException e) {
+                        callback.failure(e);
+                        e.printStackTrace();
+                    }
+                    return entries;
+                }
+
+                @Override
+                public void failure(Exception e) {
+                    callback.failure(e);
+                }
+            });
         } catch (SQLException e) {
             callback.failure(e);
         }

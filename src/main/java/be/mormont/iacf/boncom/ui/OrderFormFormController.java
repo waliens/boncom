@@ -18,7 +18,6 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.util.Pair;
 
-import javax.xml.ws.handler.Handler;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
@@ -201,8 +200,13 @@ public class OrderFormFormController implements Initializable {
             formTitle.setText("Mise à jour d'un bon de commande (" + orderForm.getNumber() + ")");
             numberField.setText(Long.toString(orderForm.getNumber()));
             dateField.setValue(orderForm.getDate());
+            entries.addAll(orderForm.getEntries());
             submitButton.setText("Update");
-            submitButton.setOnMouseClicked(e -> System.out.println("Update..."));
+            submitButton.setOnMouseClicked(e -> {
+                OrderForm orderForm = getOrderForm();
+                System.out.println("Update...");
+                handler.handle(orderForm);
+            });
         } else {
             formTitle.setText("Créer un nouveau bon de commande");
             dateField.setValue(LocalDate.now());
@@ -299,6 +303,6 @@ public class OrderFormFormController implements Initializable {
 
     // callback called when object is update when
     public interface OrderFormHandler {
-        void handler(OrderForm form);
+        void handle(OrderForm form);
     }
 }

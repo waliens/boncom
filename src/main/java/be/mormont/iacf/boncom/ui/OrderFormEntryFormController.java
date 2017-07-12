@@ -83,7 +83,7 @@ public class OrderFormEntryFormController implements Initializable {
         FXMLModalHelper.closeModal(cancelButton.getParent());
     }
 
-    /** A handler for enabling third-party components managing the entry generated in this form */
+    /** A handle for enabling third-party components managing the entry generated in this form */
     public interface OrderFormEntryHandler {
         void handle(OrderFormEntry entry);
     }

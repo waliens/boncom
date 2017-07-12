@@ -6,7 +6,7 @@ import java.math.BigDecimal;
  * Created by Romain on 28-06-17.
  * This is a class.
  */
-public class OrderFormEntry {
+public class OrderFormEntry implements Comparable<OrderFormEntry> {
     private long id;
     private long orderFormId;
     private String reference;
@@ -77,5 +77,21 @@ public class OrderFormEntry {
 
     public void setOrderFormId(long orderFormId) {
         this.orderFormId = orderFormId;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return (int)id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof OrderFormEntry && ((OrderFormEntry) obj).compareTo(this) == 0;
+    }
+
+    @Override
+    public int compareTo(OrderFormEntry o) {
+        return (int) (getId() - o.getId());
     }
 }
