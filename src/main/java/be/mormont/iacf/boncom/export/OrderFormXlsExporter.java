@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import be.mormont.iacf.boncom.data.OrderFormEntry;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.util.Units;
 
@@ -25,16 +25,41 @@ import org.apache.poi.util.Units;
  * By  : Mormont Romain
  */
 public class OrderFormXlsExporter implements Exporter<OrderForm> {
-    private static int ROW_DATE = 1, ROW_NAME = 3, ROW_ADDRESS = 4, ROW_CITY = 5, ROW_PHONE1 = 6,
-            ROW_PHONE2 = 7, ROW_TARIF = 9, ROW_TABLE_HEADERS = 11, ROW_TABLE_FIRST_ENTRY = 12,
-            ROW_TOTAL = 44, ROW_SIGN = 46;
-
-    private static int[] ROWS = new int[] {
-            ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1, ROW_PHONE2,
-            ROW_TARIF, ROW_TABLE_HEADERS, ROW_TABLE_FIRST_ENTRY, ROW_TOTAL, ROW_SIGN
-    };
+    private static int MAX_ENTRIES;
+    private static int ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1,
+            ROW_PHONE2, ROW_TARIF, ROW_TABLE_HEADERS, ROW_TABLE_FIRST_ENTRY,
+            ROW_TOTAL, ROW_SIGN;
 
     private static int COL_REF = 0, COL_DESIGNATION = 1, COL_QUANTITY = 2, COL_UNIT_PRICE = 3, COL_TOTAL = 5;
+    private static int[] ROWS, COLS;
+    private static String EURO_CURRENCY_FORMAT = "#,##0.00\\ \"€\";\\-\\ #,##0.00\\ \"€\";\\-\\ \"€\"";
+
+    static {
+        MAX_ENTRIES = 31;
+        ROW_DATE = 1;
+        ROW_NAME = 3;
+        ROW_ADDRESS = ROW_NAME + 1;
+        ROW_CITY = ROW_ADDRESS + 1;
+        ROW_PHONE1 = ROW_CITY + 1;
+        ROW_PHONE2 = ROW_PHONE1 + 1;
+        ROW_TARIF = 9;
+        ROW_TABLE_HEADERS = 11;
+        ROW_TABLE_FIRST_ENTRY = ROW_TABLE_HEADERS + 1;
+        ROW_TOTAL = ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES + 1;
+        ROW_SIGN = ROW_TOTAL + 2;
+        ROWS = new int[] {
+            ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1, ROW_PHONE2,
+            ROW_TARIF, ROW_TABLE_HEADERS, ROW_TABLE_FIRST_ENTRY, ROW_TOTAL, ROW_SIGN
+        };
+        COL_REF = 0;
+        COL_DESIGNATION = 1;
+        COL_QUANTITY = 2;
+        COL_UNIT_PRICE = 3;
+        COL_TOTAL = 5;
+        COLS = new int[] {
+            COL_REF, COL_DESIGNATION, COL_QUANTITY, COL_UNIT_PRICE, COL_TOTAL
+        };
+    }
 
     private Map<Integer, Row> getRows(Sheet sheet) {
         Map<Integer, Row> map = new HashMap<>();
@@ -45,7 +70,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
     }
 
     public int baseColumnWidth(int colCount) {
-        final int POINTS_IN_CHAR = 11;
+        final int POINTS_IN_CHAR = 6;
         int emuPerChar = Units.toEMU(POINTS_IN_CHAR);
         double centimeterPerChar = emuPerChar / (float)Units.EMU_PER_CENTIMETER;
         double a4Width = 21.0;
@@ -88,7 +113,13 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         rows.get(ROW_TABLE_HEADERS).createCell(COL_UNIT_PRICE).setCellValue("Prix Unit.");
         rows.get(ROW_TABLE_HEADERS).createCell(COL_TOTAL).setCellValue("Total");
 
-        for(int i = 0; i < object.getEntries().size(); ++i) {
+        // merge all unit price cells
+        for (int i = 0; i < MAX_ENTRIES; ++i) {
+            int rowId = ROW_TABLE_FIRST_ENTRY + i;
+            sheet.addMergedRegion(new CellRangeAddress(rowId, rowId, COL_UNIT_PRICE, COL_UNIT_PRICE + 1));
+        }
+
+        for(int i = 0; i < object.getEntries().size() && i < MAX_ENTRIES; ++i) {
             OrderFormEntry entry = object.getEntries().get(i);
             int rowId = ROW_TABLE_FIRST_ENTRY + i;
             Row row = sheet.createRow(rowId);
@@ -97,10 +128,25 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
             }
             row.createCell(COL_DESIGNATION).setCellValue(entry.getDesignation());
             row.createCell(COL_QUANTITY).setCellValue(entry.getQuantity());
-            sheet.addMergedRegion(new CellRangeAddress(rowId, rowId, COL_UNIT_PRICE, COL_UNIT_PRICE + 1));
             row.createCell(COL_UNIT_PRICE).setCellValue(entry.getUnitPrice().doubleValue());
-            row.createCell(COL_TOTAL).setCellValue(entry.getTotal().doubleValue());
+            CellAddress quantityAddr = new CellAddress(rowId, COL_QUANTITY),
+                    unitPriceAddr = new CellAddress(rowId, COL_UNIT_PRICE);
+            row.createCell(COL_TOTAL).setCellFormula(quantityAddr.formatAsString() + " * " + unitPriceAddr.formatAsString());
         }
+
+        // total row
+        rows.get(ROW_TOTAL).createCell(COL_DESIGNATION).setCellValue("TOTAL COMMANDE");
+        CellRangeAddress qtyCellsRange = new CellRangeAddress(ROW_TABLE_FIRST_ENTRY, ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES - 1, COL_QUANTITY, COL_QUANTITY);
+        rows.get(ROW_TOTAL).createCell(COL_QUANTITY).setCellFormula("COUNT(" + qtyCellsRange.formatAsString() + ")");
+        CellRangeAddress totalCellsRange = new CellRangeAddress(ROW_TABLE_FIRST_ENTRY, ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES - 1, COL_TOTAL, COL_TOTAL);
+        rows.get(ROW_TOTAL).createCell(COL_TOTAL).setCellFormula("SUM(" + totalCellsRange.formatAsString() + ")");
+
+        // sign row
+        rows.get(ROW_SIGN).createCell(COL_DESIGNATION).setCellValue("D. CORVERS, l'Ordonnateur");
+        rows.get(ROW_SIGN).createCell(COL_UNIT_PRICE).setCellValue("J-N MORMONT, le Comptable");
+
+        // style
+        styleSheet(book, sheet, rows, object.getEntries().size());
 
         // save
         saveWorkfbook(book, filepath);
@@ -143,6 +189,94 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         }
     }
 
+    private Font copyFont(Workbook book, Font toCopy) {
+        Font font = book.createFont();
+        font.setColor(toCopy.getColor());
+        font.setCharSet(toCopy.getCharSet());
+        font.setBold(toCopy.getBold());
+        font.setFontHeight(toCopy.getFontHeight());
+        font.setFontName(toCopy.getFontName());
+        font.setItalic(toCopy.getItalic());
+        font.setStrikeout(toCopy.getStrikeout());
+        font.setTypeOffset(toCopy.getTypeOffset());
+        font.setUnderline(toCopy.getUnderline());
+        return font;
+    }
+
+    private void setBorders(CellStyle style, BorderStyle borderStyle) {
+        style.setBorderBottom(borderStyle);
+        style.setBorderLeft(borderStyle);
+        style.setBorderRight(borderStyle);
+        style.setBorderTop(borderStyle);
+
+    }
+
+    private void styleSheet(Workbook workbook, Sheet sheet, Map<Integer, Row> rows, int nEntries) {
+        Font defaultFont = workbook.getFontAt(rows.get(ROW_TABLE_HEADERS).getCell(COL_REF).getCellStyle().getFontIndex());
+        defaultFont.setFontHeightInPoints((short)9);
+        Font boldFont = copyFont(workbook, defaultFont);
+        boldFont.setBold(true);
+
+        // create some styles
+        CellStyle mediumBorderCellStyle = workbook.createCellStyle();
+        setBorders(mediumBorderCellStyle, BorderStyle.MEDIUM);
+
+        CellStyle thinBorderCellStyle = workbook.createCellStyle();
+        setBorders(thinBorderCellStyle, BorderStyle.THIN);
+
+        CellStyle thinCenteredCellStyle = workbook.createCellStyle();
+        setBorders(thinCenteredCellStyle, BorderStyle.THIN);
+
+        CellStyle tableHeaderCellStyle = workbook.createCellStyle();
+        tableHeaderCellStyle.setAlignment(HorizontalAlignment.CENTER);
+        tableHeaderCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        setBorders(tableHeaderCellStyle, BorderStyle.MEDIUM);
+        tableHeaderCellStyle.setFont(boldFont);
+
+        short euroFormatIdx = createEuroFormat(workbook);
+        CellStyle moneyMediumCellStyle = workbook.createCellStyle();
+        moneyMediumCellStyle.setDataFormat(euroFormatIdx);
+        setBorders(moneyMediumCellStyle, BorderStyle.MEDIUM);
+
+        CellStyle moneyThinCellStyle = workbook.createCellStyle();
+        moneyThinCellStyle.setDataFormat(euroFormatIdx);
+        setBorders(moneyThinCellStyle, BorderStyle.THIN);
+
+        CellStyle boldCellStyle = workbook.createCellStyle();
+        boldCellStyle.setFont(boldFont);
+
+        // apply styles
+        rows.get(ROW_DATE).getCell(COL_QUANTITY).setCellStyle(boldCellStyle);
+        rows.get(ROW_DATE).getCell(COL_UNIT_PRICE + 1).setCellStyle(boldCellStyle);
+
+        Row headersRow = rows.get(ROW_TABLE_HEADERS);
+        headersRow.setHeightInPoints(2 * headersRow.getHeightInPoints());
+        for (int col : COLS) {
+            headersRow.getCell(col).setCellStyle(tableHeaderCellStyle);
+        }
+        headersRow.createCell(COL_UNIT_PRICE + 1).setCellStyle(tableHeaderCellStyle);
+
+        // set
+        for (int rowId = ROW_TABLE_FIRST_ENTRY; rowId < ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES; ++rowId) {
+            Row row = sheet.getRow(rowId) == null ? sheet.createRow(rowId) : sheet.getRow(rowId);
+            for (int col : COLS) {
+                Cell cell = rowId < ROW_TABLE_FIRST_ENTRY + nEntries ? row.getCell(col) : row.createCell(col);
+                if (col == COL_UNIT_PRICE || col == COL_TOTAL) {
+                    cell.setCellStyle(moneyThinCellStyle);
+                } else {
+                    cell.setCellStyle(thinBorderCellStyle);
+                }
+            }
+            row.createCell(COL_UNIT_PRICE + 1).setCellStyle(thinBorderCellStyle);
+        }
+
+        rows.get(ROW_TOTAL).getCell(COL_QUANTITY).setCellStyle(mediumBorderCellStyle);
+        rows.get(ROW_TOTAL).getCell(COL_TOTAL).setCellStyle(moneyMediumCellStyle);
+    }
+
+    private static short createEuroFormat(Workbook book) {
+        return book.createDataFormat().getFormat(EURO_CURRENCY_FORMAT);
+    }
 
     public static void main(String[] args) throws IOException {
         ArrayList<OrderFormEntry> entries = new ArrayList<>();
