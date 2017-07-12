@@ -3,6 +3,7 @@ package be.mormont.iacf.boncom.db;
 import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
+import com.sun.org.apache.xpath.internal.operations.Or;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -126,6 +127,31 @@ public class OrderFormTable extends BaseTable<OrderForm> {
             addOrderFormWithDefinedNumber(orderForm, callback, commit);
         } else {
             addOrderFormWithAutoNumber(orderForm, callback, commit);
+        }
+    }
+
+    public void getAllOrderForms(Callback<ArrayList<OrderForm>> callback) {
+        try {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<OrderForm>>() {
+                @Override
+                public PreparedStatement getStatement(Connection conn) throws SQLException {
+                    return selectAllStatement(conn);
+                }
+
+                @Override
+                public ArrayList<OrderForm> success(ResultSet resultSet, PreparedStatement statement) {
+                    ArrayList<OrderForm> list = new ArrayList<>();
+                    callback.success(list);
+                    return list;
+                }
+
+                @Override
+                public void failure(Exception e) {
+                    callback.failure(e);
+                }
+            });
+        } catch (SQLException e) {
+            callback.failure(e);
         }
     }
 

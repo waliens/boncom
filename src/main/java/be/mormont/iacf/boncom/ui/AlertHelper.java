@@ -44,4 +44,14 @@ public class AlertHelper {
             true
         );
     }
+
+    static void popException(Exception e) {
+        AlertHelper.popAlert(
+                Alert.AlertType.ERROR,
+                "Erreur",
+                "Une exception s'est produite.",
+                e.getMessage(),
+                true
+        );
+    }
 }

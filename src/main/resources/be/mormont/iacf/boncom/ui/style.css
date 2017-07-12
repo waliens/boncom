@@ -4,6 +4,10 @@ Label.title {
     -fx-font-size: 2em;
 }
 
+Label.subTitle {
+    -fx-font-size: 1.5em;
+}
+
 .rootMenu {
     -fx-fill: yellow;
     -fx-border-stroke: green;
@@ -34,4 +38,8 @@ Label.title {
 
 .leftAlignedColumn {
     -fx-alignment: CENTER-LEFT;
+}
+
+.rootOrderFormsGridPane {
+    -fx-padding: 10 5 5 5;
 }

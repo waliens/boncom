@@ -1,5 +1,6 @@
 package be.mormont.iacf.boncom.data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -77,5 +78,13 @@ public class OrderForm {
      */
     public boolean isNumberDefined() {
         return number > 0;
+    }
+
+    public BigDecimal getTotal() {
+        BigDecimal total = new BigDecimal(0);
+        for(OrderFormEntry e : getEntries()) {
+            total = total.add(e.getTotal());
+        }
+        return total;
     }
 }

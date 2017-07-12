@@ -18,6 +18,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.util.Pair;
 
+import javax.xml.ws.handler.Handler;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
@@ -60,6 +61,7 @@ public class OrderFormFormController implements Initializable {
     private ObservableList<Entity> purchasersList;
     private ObservableList<Entity> providersList;
     private OrderForm orderForm = null;
+    private OrderFormHandler handler = orderForm -> {};
 
     private void refresh() {
         numberFieldLabel.setText("Numéro");
@@ -237,10 +239,10 @@ public class OrderFormFormController implements Initializable {
         FXMLModalHelper.closeModal(cancelButton.getParent());
     }
 
-    public synchronized void setOrderForm(OrderForm orderForm) {
+    public synchronized void setOrderForm(OrderForm orderForm, OrderFormHandler handler) {
+        this.handler = handler;
         this.orderForm = orderForm;
         refresh();
-
     }
 
     private OrderForm getOrderForm() {
@@ -293,5 +295,10 @@ public class OrderFormFormController implements Initializable {
      */
     private void setTotal(BigDecimal total) {
         totalField.setText(StringUtil.formatCurrency(total));
+    }
+
+    // callback called when object is update when
+    public interface OrderFormHandler {
+        void handler(OrderForm form);
     }
 }

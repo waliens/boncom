@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
-
 <?import javafx.scene.layout.VBox?>
+
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.mormont.iacf.boncom.ui.RootSceneController">
    <top>
       <Label fx:id="titleLabel" styleClass="title" text="Label" BorderPane.alignment="CENTER" />
    </top>
    <center>
-       <GridPane styleClass="rootMenu" BorderPane.alignment="CENTER" vgap="5" hgap="5">
+       <GridPane hgap="5" styleClass="rootMenu" vgap="5" BorderPane.alignment="CENTER">
            <columnConstraints>
                <ColumnConstraints hgrow="SOMETIMES" minWidth="50.0" prefWidth="75.0" />
                <ColumnConstraints hgrow="SOMETIMES" minWidth="50.0" prefWidth="75.0" />
@@ -24,14 +27,43 @@
            </rowConstraints>
 
            <VBox fx:id="createOrderFormBox" styleClass="rootMenuItem" GridPane.columnIndex="0" GridPane.rowIndex="0">
-               <Label fx:id="createOrderFormLabel"/>
+               <Label fx:id="createOrderFormLabel" />
            </VBox>
            <VBox fx:id="createProviderBox" styleClass="rootMenuItem" GridPane.columnIndex="1" GridPane.rowIndex="0">
-               <Label fx:id="createProviderLabel"/>
+               <Label fx:id="createProviderLabel" />
            </VBox>
            <VBox fx:id="exportOrderFormBox" styleClass="rootMenuItem" GridPane.columnIndex="0" GridPane.rowIndex="1">
-               <Label fx:id="exportOrderFormLabel"/>
+               <Label fx:id="exportOrderFormLabel" />
            </VBox>
        </GridPane>
    </center>
+   <bottom>
+       <GridPane hgap="5" vgap="5" BorderPane.alignment="CENTER" styleClass="rootOrderFormsGridPane">
+           <columnConstraints>
+               <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+               <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+           </columnConstraints>
+           <rowConstraints>
+               <RowConstraints vgrow="SOMETIMES"/>
+               <RowConstraints vgrow="SOMETIMES"/>
+           </rowConstraints>
+           <Label fx:id="orderFormsLabel" GridPane.rowIndex="0" GridPane.columnIndex="0" textAlignment="CENTER" styleClass="subTitle"/>
+           <ButtonBar GridPane.rowIndex="0" GridPane.columnIndex="1">
+               <buttons>
+                   <Button fx:id="orderFormEditButton" mnemonicParsing="false"/>
+                   <Button fx:id="orderFormExportButton" mnemonicParsing="false"/>
+               </buttons>
+           </ButtonBar>
+           <TableView fx:id="orderFormsTable" minHeight="100.0" prefHeight="400.0" GridPane.rowIndex="1"
+                      GridPane.columnIndex="0" GridPane.columnSpan="2">
+               <columns>
+                   <TableColumn fx:id="orderFormNumberColumn" styleClass="centeredColumn" />
+                   <TableColumn fx:id="orderFormDateColumn" styleClass="centeredColumn" />
+                   <TableColumn fx:id="orderFormProviderColumn" />
+                   <TableColumn fx:id="orderFormCountColumn" styleClass="centeredColumn" />
+                   <TableColumn fx:id="orderFormTotalColumn" styleClass="centeredColumn" />
+               </columns>
+           </TableView>
+       </GridPane>
+   </bottom>
 </BorderPane>
