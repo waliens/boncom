@@ -280,7 +280,23 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 stmt.executeUpdate();
             }
 
+            // delete removed entries
             OrderFormEntryTable orderFormEntryTable = new OrderFormEntryTable();
+            ArrayList<Long> remainingIds = new ArrayList<>();
+            for (OrderFormEntry entry : form.getEntries()) {
+                if (entry.getId() != -1) {
+                    remainingIds.add(entry.getId());
+                }
+            }
+            long[] ids = new long[remainingIds.size()];
+            for (int i = 0; i < ids.length; ++i) {
+                ids[i] = remainingIds.get(i);
+            }
+            try (PreparedStatement stmt = orderFormEntryTable.getRemoveMissingEntriesStatement(conn, ids, form.getId())) {
+                stmt.executeUpdate();
+            }
+
+            // update remaining/new entries
             for (OrderFormEntry entry : form.getEntries()) {
                 orderFormEntryTable.updateEntry(entry);
             }

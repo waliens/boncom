@@ -1,26 +1,19 @@
 package be.mormont.iacf.boncom.ui;
 
-import be.mormont.iacf.boncom.data.Address;
-import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
-import be.mormont.iacf.boncom.data.OrderFormEntry;
 import be.mormont.iacf.boncom.db.Callback;
 import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.export.OrderFormXlsExporter;
 import be.mormont.iacf.boncom.util.StringUtil;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.Pair;
 
@@ -30,6 +23,7 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.ResourceBundle;
 
 /**
@@ -57,7 +51,7 @@ public class RootSceneController implements Initializable {
     @FXML private TableColumn<OrderForm, Long> orderFormNumberColumn;
     @FXML private TableColumn<OrderForm, LocalDate> orderFormDateColumn;
     @FXML private TableColumn<OrderForm, Integer> orderFormCountColumn;
-    @FXML private TableColumn<OrderForm, String> orderFormTotalColumn;
+    @FXML private TableColumn<OrderForm, BigDecimal> orderFormTotalColumn;
     @FXML private TableColumn<OrderForm, String> orderFormProviderColumn;
 
     private ObservableList<OrderForm> orderForms;
@@ -93,7 +87,7 @@ public class RootSceneController implements Initializable {
             Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, titleLabel.getScene().getWindow());
             OrderForm selected = orderFormsTable.getSelectionModel().getSelectedItem();
             nodeCtrl.getValue().setOrderForm(selected, form -> {
-
+                refreshHistory();
             });
         });
 
@@ -125,8 +119,9 @@ public class RootSceneController implements Initializable {
         orderFormNumberColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getNumber()));
         orderFormDateColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getDate()));
         orderFormCountColumn.setCellValueFactory(params -> new SimpleObjectProperty<>(params.getValue().getEntries().size()));
-        orderFormTotalColumn.setCellValueFactory(params -> new SimpleStringProperty(StringUtil.formatCurrency(params.getValue().getTotal())));
+        orderFormTotalColumn.setCellValueFactory(params -> new SimpleObjectProperty<>(params.getValue().getTotal()));
         orderFormProviderColumn.setCellValueFactory(params -> new SimpleStringProperty(params.getValue().getProvider().getName()));
+        orderFormTotalColumn.setCellFactory(param -> new TotalCellFactory());
 
         // columns
         orderFormNumberColumn.setText("Numéro");
@@ -134,6 +129,9 @@ public class RootSceneController implements Initializable {
         orderFormCountColumn.setText("Quantité");
         orderFormTotalColumn.setText("Total");
         orderFormProviderColumn.setText("Fournisseur");
+
+        // sort
+        orderFormDateColumn.setComparator(LocalDate::compareTo);
 
         // data
         orderForms = FXCollections.observableArrayList();
@@ -151,6 +149,12 @@ public class RootSceneController implements Initializable {
             @Override
             public void success(ArrayList<OrderForm> object) {
                 orderForms.setAll(object);
+                orderFormsTable.getSortOrder().clear();
+                orderFormsTable.getSortOrder().add(orderFormDateColumn);
+                orderFormsTable.getSortOrder().add(orderFormNumberColumn);
+                orderFormNumberColumn.setSortType(TableColumn.SortType.ASCENDING);
+                orderFormDateColumn.setSortType(TableColumn.SortType.DESCENDING);
+                orderFormDateColumn.setSortable(true);
             }
 
             @Override
@@ -158,5 +162,17 @@ public class RootSceneController implements Initializable {
                 AlertHelper.popException(e);
             }
         });
+    }
+
+    private static class TotalCellFactory extends TableCell<OrderForm, BigDecimal> {
+        @Override
+        protected void updateItem(BigDecimal item, boolean empty) {
+            super.updateItem(item, empty);
+            if (item != null && !empty) {
+                setText(StringUtil.formatCurrency(item));
+            } else {
+                setGraphic(null);
+            }
+        }
     }
 }

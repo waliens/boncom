@@ -221,4 +221,20 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
         }
     }
 
+    private String removeMissingEntriesQuery(int n) {
+        String[] repeated = Collections.nCopies(n, "?").toArray(new String[n]);
+        return "DELETE FROM " + NAME +
+                " WHERE " + FIELD_ORDER_FORM + "=? " +
+                 " AND " + FIELD_ID + " NOT IN (" + String.join(", ", repeated) + ")";
+
+    }
+
+    PreparedStatement getRemoveMissingEntriesStatement(Connection conn, long[] ids, long orderFormId) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(removeMissingEntriesQuery(ids.length));
+        statement.setLong(1, orderFormId);
+        for (int i = 0; i < ids.length; ++i) {
+            statement.setLong(i + 2, ids[i]);
+        }
+        return statement;
+    }
 }
