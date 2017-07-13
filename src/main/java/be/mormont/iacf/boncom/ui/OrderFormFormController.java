@@ -180,7 +180,7 @@ public class OrderFormFormController implements Initializable {
             public void success(ArrayList<Entity> object) {
                 providersList.addAll(object);
                 if (orderForm != null) {
-                    purchaserField.getSelectionModel().select(orderForm.getProvider());
+                    providerField.getSelectionModel().select(orderForm.getProvider());
                 }
             }
 
