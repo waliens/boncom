@@ -4,6 +4,7 @@ import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
 import com.sun.org.apache.regexp.internal.RE;
 
+import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,7 +49,10 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
 
     @Override
     String selectQuery() {
-        return "SELECT * FROM " + NAME + " WHERE " + FIELD_ID + "=?";
+        return "SELECT " +
+                    FIELD_ID + ", " + FIELD_ORDER_FORM + ", " + FIELD_REFERENCE + ", " +
+                    FIELD_DESIGNATION + ", " + FIELD_QUANTITY + ", " + FIELD_UNIT_PRICE +
+                " FROM " + NAME + " WHERE " + FIELD_ID + "=?";
     }
 
     @Override
@@ -60,7 +64,10 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
 
     @Override
     String selectAllQuery() {
-        return "SELECT * FROM " + NAME;
+        return "SELECT " +
+                    FIELD_ID + ", " + FIELD_ORDER_FORM + ", " + FIELD_REFERENCE + ", " +
+                    FIELD_DESIGNATION + ", " + FIELD_QUANTITY + ", " + FIELD_UNIT_PRICE +
+                " FROM " + NAME;
     }
 
     @Override
@@ -155,6 +162,30 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
             });
         } catch (SQLException e) {
             callback.failure(e);
+        }
+    }
+
+    private String selectFormEntriesQuery() {
+        return "SELECT " +
+                    FIELD_ID + ", " + FIELD_ORDER_FORM + ", " + FIELD_REFERENCE + ", " +
+                    FIELD_DESIGNATION + ", " + FIELD_QUANTITY + ", " + FIELD_UNIT_PRICE +
+                " FROM " + NAME + " WHERE " + FIELD_ORDER_FORM + "=?";
+    }
+
+    private PreparedStatement selectFormEntriesStatement(Connection conn, long orderFormId) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(selectFormEntriesQuery());
+        statement.setLong(1, orderFormId);
+        return statement;
+    }
+
+    ArrayList<OrderFormEntry> getFormEntries(long orderFormid) throws SQLException {
+        Connection conn = Database.getDatabase().getConnection();
+        try (PreparedStatement statement = selectFormEntriesStatement(conn, orderFormid); ResultSet set = statement.executeQuery()) {
+            ArrayList<OrderFormEntry> entries = new ArrayList<>();
+            while(set.next()) {
+                entries.add(makeEntry(set));
+            }
+            return entries;
         }
     }
 }

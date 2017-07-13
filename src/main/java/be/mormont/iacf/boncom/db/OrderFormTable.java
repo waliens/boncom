@@ -6,6 +6,7 @@ import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
 import com.sun.org.apache.xpath.internal.operations.Or;
 
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -171,6 +172,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
             set.getString(offset + 8).split(",")
         );
     }
+
     private OrderForm makeShallowOrderForm(ResultSet set) throws SQLException {
         final int OFFSET_PROVIDER = 5, OFFSET_PURCHASER = OFFSET_PROVIDER + 8;
         Date date = set.getDate(4);
@@ -184,52 +186,21 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         );
     }
 
-
     public void getAllOrderForms(Callback<ArrayList<OrderForm>> callback) {
         try {
-            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<OrderForm>>() {
-                @Override
-                public PreparedStatement getStatement(Connection conn) throws SQLException {
-                    return selectAllStatement(conn);
+            Connection conn = Database.getDatabase().getConnection();
+            try (PreparedStatement orderFormsStatement = selectAllStatement(conn); ResultSet orderFormsSet = orderFormsStatement.executeQuery()) {
+                ArrayList<OrderForm> orderForms = new ArrayList<>();
+                OrderFormEntryTable orderFormEntryTable = new OrderFormEntryTable();
+                while (orderFormsSet.next()) {
+                    OrderForm form = makeShallowOrderForm(orderFormsSet);
+                    form.setEntries(orderFormEntryTable.getFormEntries(form.getId()));
+                    orderForms.add(form);
                 }
-
-                @Override
-                public ArrayList<OrderForm> success(ResultSet resultSet, PreparedStatement statement) {
-                    ArrayList<OrderForm> list = new ArrayList<>();
-                    OrderFormEntryTable orderFormEntryTable = new OrderFormEntryTable();
-                    try {
-                        while (resultSet.next()) {
-                            OrderForm form = makeShallowOrderForm(resultSet);
-                            orderFormEntryTable.getOrderFormEntries(form, new Callback<ArrayList<OrderFormEntry>>() {
-                                @Override
-                                public void success(ArrayList<OrderFormEntry> object) {
-                                    form.setEntries(object);
-                                }
-
-                                @Override
-                                public void failure(Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
-
-                            list.add(form);
-                        }
-                        callback.success(list);
-                    } catch (RuntimeException | SQLException e) {
-                        callback.failure(e);
-                        e.printStackTrace();
-                    }
-                    return list;
-                }
-
-                @Override
-                public void failure(Exception e) {
-                    callback.failure(e);
-                }
-            });
+                callback.success(orderForms);
+            }
         } catch (SQLException e) {
             callback.failure(e);
-            e.printStackTrace();
         }
     }
 
