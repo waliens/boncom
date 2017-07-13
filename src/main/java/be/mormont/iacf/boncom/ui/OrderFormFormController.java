@@ -229,7 +229,10 @@ public class OrderFormFormController implements Initializable {
                 if (orderForm != null) {
                     new OrderFormTable().addOrderForm(orderForm, new UICallback<OrderForm>() {
                         @Override
-                        public void success(OrderForm object) { closeForm(); }
+                        public void success(OrderForm object) {
+                            handler.handle(orderForm);
+                            closeForm();
+                        }
 
                         @Override
                         public void failure(Exception e) {
@@ -256,8 +259,11 @@ public class OrderFormFormController implements Initializable {
         FXMLModalHelper.closeModal(cancelButton.getParent());
     }
 
-    public synchronized void setOrderForm(OrderForm orderForm, OrderFormHandler handler) {
+    public synchronized void setHandler(OrderFormHandler handler) {
         this.handler = handler;
+    }
+
+    public synchronized void setOrderForm(OrderForm orderForm) {
         this.orderForm = orderForm;
         refresh();
     }

@@ -64,7 +64,8 @@ public class RootSceneController implements Initializable {
 
         createOrderFormBox.setOnMouseClicked(event -> {
             Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, titleLabel.getScene().getWindow());
-            nodeCtrl.getValue().setOrderForm(null, null);
+            nodeCtrl.getValue().setOrderForm(null);
+            nodeCtrl.getValue().setHandler(form -> refreshHistory());
         });
         createProviderBox.setOnMouseClicked(event -> {
             Pair<Parent, ProviderFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_PROVIDER_FXML, titleLabel.getScene().getWindow());
@@ -86,9 +87,8 @@ public class RootSceneController implements Initializable {
         orderFormEditButton.setOnMouseClicked(event -> {
             Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, titleLabel.getScene().getWindow());
             OrderForm selected = orderFormsTable.getSelectionModel().getSelectedItem();
-            nodeCtrl.getValue().setOrderForm(selected, form -> {
-                refreshHistory();
-            });
+            nodeCtrl.getValue().setOrderForm(selected);
+            nodeCtrl.getValue().setHandler(form -> refreshHistory());
         });
 
         orderFormRefreshButton.setOnMouseClicked(event -> {
