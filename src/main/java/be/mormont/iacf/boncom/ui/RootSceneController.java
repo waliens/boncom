@@ -17,14 +17,15 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.util.Pair;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
@@ -92,6 +93,19 @@ public class RootSceneController implements Initializable {
             nodeCtrl.getValue().setOrderForm(selected, form -> {
 
             });
+        });
+
+        orderFormExportButton.setOnMouseClicked(event -> {
+            OrderForm selected = orderFormsTable.getSelectionModel().getSelectedItem();
+            FileChooser fileChooser = new FileChooser();
+            File file = fileChooser.showSaveDialog(titleLabel.getScene().getWindow());
+            try {
+                if (file != null) {
+                    new OrderFormXlsExporter().export(file.getAbsolutePath(), selected);
+                }
+            } catch (IOException e) {
+                AlertHelper.popException(e);
+            }
         });
 
         // Columns widths
