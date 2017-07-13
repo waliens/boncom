@@ -36,8 +36,8 @@
    <bottom>
        <GridPane hgap="5" vgap="5" BorderPane.alignment="CENTER" styleClass="rootOrderFormsGridPane">
            <columnConstraints>
-               <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-               <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+               <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0"/>
+               <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
            </columnConstraints>
            <rowConstraints>
                <RowConstraints vgrow="SOMETIMES"/>
@@ -48,6 +48,7 @@
                <buttons>
                    <Button fx:id="orderFormEditButton" mnemonicParsing="false"/>
                    <Button fx:id="orderFormExportButton" mnemonicParsing="false"/>
+                   <Button fx:id="orderFormRefreshButton" mnemonicParsing="false"/>
                </buttons>
            </ButtonBar>
            <TableView fx:id="orderFormsTable" minHeight="100.0" prefHeight="400.0" GridPane.rowIndex="1"

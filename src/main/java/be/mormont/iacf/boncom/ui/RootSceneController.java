@@ -52,6 +52,7 @@ public class RootSceneController implements Initializable {
     @FXML private Label orderFormsLabel;
     @FXML private Button orderFormEditButton;
     @FXML private Button orderFormExportButton;
+    @FXML private Button orderFormRefreshButton;
     @FXML private TableView<OrderForm> orderFormsTable;
     @FXML private TableColumn<OrderForm, Long> orderFormNumberColumn;
     @FXML private TableColumn<OrderForm, LocalDate> orderFormDateColumn;
@@ -80,6 +81,7 @@ public class RootSceneController implements Initializable {
         orderFormsLabel.setText("Historique");
         orderFormEditButton.setText("Mettre à jour");
         orderFormExportButton.setText("Exporter");
+        orderFormRefreshButton.setText("Refraîchir");
 
         // initialize button and add listener to enable them on selection
         setTableButtonsDisableProperty(false);
@@ -93,6 +95,10 @@ public class RootSceneController implements Initializable {
             nodeCtrl.getValue().setOrderForm(selected, form -> {
 
             });
+        });
+
+        orderFormRefreshButton.setOnMouseClicked(event -> {
+            refreshHistory();
         });
 
         orderFormExportButton.setOnMouseClicked(event -> {
@@ -132,18 +138,7 @@ public class RootSceneController implements Initializable {
         // data
         orderForms = FXCollections.observableArrayList();
         orderFormsTable.setItems(orderForms);
-        //orderForms.addAll(DEBUG_getOrderForm());
-        new OrderFormTable().getAllOrderForms(new Callback<ArrayList<OrderForm>>() {
-            @Override
-            public void success(ArrayList<OrderForm> object) {
-                orderForms.addAll(object);
-            }
-
-            @Override
-            public void failure(Exception e) {
-                AlertHelper.popException(e);
-            }
-        });
+        refreshHistory();
     }
 
     private void setTableButtonsDisableProperty(boolean enable) {
@@ -151,11 +146,17 @@ public class RootSceneController implements Initializable {
         orderFormExportButton.setDisable(!enable);
     }
 
-    private OrderForm DEBUG_getOrderForm() {
-        ArrayList<OrderFormEntry> entries = new ArrayList<>();
-        entries.add(new OrderFormEntry("ref1", "desig1", 3, new BigDecimal(25.35)));
-        entries.add(new OrderFormEntry("ref2", "desig2", 2, new BigDecimal(5.10)));
-        Entity entity = new Entity("NAME", new Address("street", "number", "box", "postcode", "city"), new String[] {"04/225"});
-        return new OrderForm(25, entity, entity, LocalDate.now(), entries);
+    private void refreshHistory() {
+        new OrderFormTable().getAllOrderForms(new Callback<ArrayList<OrderForm>>() {
+            @Override
+            public void success(ArrayList<OrderForm> object) {
+                orderForms.setAll(object);
+            }
+
+            @Override
+            public void failure(Exception e) {
+                AlertHelper.popException(e);
+            }
+        });
     }
 }
