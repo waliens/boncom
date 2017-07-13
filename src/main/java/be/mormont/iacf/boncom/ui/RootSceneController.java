@@ -81,7 +81,7 @@ public class RootSceneController implements Initializable {
         orderFormsLabel.setText("Historique");
         orderFormEditButton.setText("Mettre à jour");
         orderFormExportButton.setText("Exporter");
-        orderFormRefreshButton.setText("Refraîchir");
+        orderFormRefreshButton.setText("Rafraîchir");
 
         // initialize button and add listener to enable them on selection
         setTableButtonsDisableProperty(false);

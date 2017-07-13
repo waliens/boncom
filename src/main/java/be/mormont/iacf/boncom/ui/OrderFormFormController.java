@@ -3,6 +3,7 @@ package be.mormont.iacf.boncom.ui;
 import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
+import be.mormont.iacf.boncom.db.Callback;
 import be.mormont.iacf.boncom.db.EntityTable;
 import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.db.UICallback;
@@ -201,11 +202,23 @@ public class OrderFormFormController implements Initializable {
             numberField.setText(Long.toString(orderForm.getNumber()));
             dateField.setValue(orderForm.getDate());
             entries.addAll(orderForm.getEntries());
-            submitButton.setText("Update");
+            submitButton.setText("Mettre à jour");
             submitButton.setOnMouseClicked(e -> {
                 OrderForm orderForm = getOrderForm();
-                System.out.println("Update...");
-                handler.handle(orderForm);
+                if (orderForm != null) {
+                    new OrderFormTable().updateOrderForm(orderForm, new Callback<OrderForm>() {
+                        @Override
+                        public void success(OrderForm object) {
+                            handler.handle(orderForm);
+                            closeForm();
+                        }
+
+                        @Override
+                        public void failure(Exception e) {
+                            AlertHelper.popException(e);
+                        }
+                    });
+                }
             });
         } else {
             formTitle.setText("Créer un nouveau bon de commande");
@@ -276,7 +289,17 @@ public class OrderFormFormController implements Initializable {
             return null;
         }
 
-        return new OrderForm(number, purchaser, provider, date, addedEntries);
+        OrderForm newOrderForm = new OrderForm(number, purchaser, provider, date, addedEntries);
+
+        // add ids if update
+        if (orderForm != null) {
+            newOrderForm.setId(orderForm.getId());
+            for (OrderFormEntry entry: entries) {
+                entry.setOrderFormId(orderForm.getId());
+            }
+        }
+
+        return newOrderForm;
     }
 
     /**

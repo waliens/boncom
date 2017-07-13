@@ -125,6 +125,12 @@ public class OrderFormEntryFormController implements Initializable {
             return null;
         }
 
-        return new OrderFormEntry(reference, designation, quantity, unitPrice);
+        OrderFormEntry newEntry = new OrderFormEntry(reference, designation, quantity, unitPrice);
+        if (orderFormEntry != null) {
+            newEntry.setId(orderFormEntry.getId());
+            newEntry.setOrderFormId(orderFormEntry.getOrderFormId());
+        }
+
+        return newEntry;
     }
 }

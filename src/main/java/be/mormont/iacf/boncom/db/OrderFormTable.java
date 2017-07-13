@@ -100,6 +100,53 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         return conn.prepareStatement(selectAllQuery());
     }
 
+    private Entity getEntityWithOffset(ResultSet set, int offset) throws SQLException{
+        Address address = new Address(
+                set.getString(offset + 3),
+                set.getString(offset + 4),
+                set.getString(offset + 5),
+                set.getString(offset + 6),
+                set.getString(offset + 7)
+        );
+        return new Entity(
+                set.getLong(offset + 1),
+                set.getString(offset + 2),
+                address,
+                set.getString(offset + 8).split(",")
+        );
+    }
+
+    private OrderForm makeShallowOrderForm(ResultSet set) throws SQLException {
+        final int OFFSET_PROVIDER = 5, OFFSET_PURCHASER = OFFSET_PROVIDER + 8;
+        Date date = set.getDate(4);
+        return new OrderForm(
+                set.getLong(1),
+                set.getLong(5),
+                getEntityWithOffset(set, OFFSET_PURCHASER),
+                getEntityWithOffset(set, OFFSET_PROVIDER),
+                date.toLocalDate(),
+                new ArrayList<>()
+        );
+    }
+
+    public void getAllOrderForms(Callback<ArrayList<OrderForm>> callback) {
+        try {
+            Connection conn = Database.getDatabase().getConnection();
+            try (PreparedStatement orderFormsStatement = selectAllStatement(conn); ResultSet orderFormsSet = orderFormsStatement.executeQuery()) {
+                ArrayList<OrderForm> orderForms = new ArrayList<>();
+                OrderFormEntryTable orderFormEntryTable = new OrderFormEntryTable();
+                while (orderFormsSet.next()) {
+                    OrderForm form = makeShallowOrderForm(orderFormsSet);
+                    form.setEntries(orderFormEntryTable.getFormEntries(form.getId()));
+                    orderForms.add(form);
+                }
+                callback.success(orderForms);
+            }
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
+    }
+
     private void addOrderFormWithAutoNumber(OrderForm orderForm, Callback<OrderForm> callback, boolean commit) {
         try {
             Database db = Database.getDatabase();
@@ -157,53 +204,6 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         }
     }
 
-    private Entity getEntityWithOffset(ResultSet set, int offset) throws SQLException{
-        Address address = new Address(
-            set.getString(offset + 3),
-            set.getString(offset + 4),
-            set.getString(offset + 5),
-            set.getString(offset + 6),
-            set.getString(offset + 7)
-        );
-        return new Entity(
-            set.getLong(offset + 1),
-            set.getString(offset + 2),
-            address,
-            set.getString(offset + 8).split(",")
-        );
-    }
-
-    private OrderForm makeShallowOrderForm(ResultSet set) throws SQLException {
-        final int OFFSET_PROVIDER = 5, OFFSET_PURCHASER = OFFSET_PROVIDER + 8;
-        Date date = set.getDate(4);
-        return new OrderForm(
-            set.getLong(1),
-            set.getLong(5),
-            getEntityWithOffset(set, OFFSET_PURCHASER),
-            getEntityWithOffset(set, OFFSET_PROVIDER),
-            date.toLocalDate(),
-            new ArrayList<>()
-        );
-    }
-
-    public void getAllOrderForms(Callback<ArrayList<OrderForm>> callback) {
-        try {
-            Connection conn = Database.getDatabase().getConnection();
-            try (PreparedStatement orderFormsStatement = selectAllStatement(conn); ResultSet orderFormsSet = orderFormsStatement.executeQuery()) {
-                ArrayList<OrderForm> orderForms = new ArrayList<>();
-                OrderFormEntryTable orderFormEntryTable = new OrderFormEntryTable();
-                while (orderFormsSet.next()) {
-                    OrderForm form = makeShallowOrderForm(orderFormsSet);
-                    form.setEntries(orderFormEntryTable.getFormEntries(form.getId()));
-                    orderForms.add(form);
-                }
-                callback.success(orderForms);
-            }
-        } catch (SQLException e) {
-            callback.failure(e);
-        }
-    }
-
     private abstract class AddFormPreparedStatementBuilder implements Database.PreparedStatementBuilder<OrderForm> {
         private OrderForm orderForm;
         private Callback<OrderForm> callback;
@@ -243,6 +243,51 @@ public class OrderFormTable extends BaseTable<OrderForm> {
 
         @Override
         public void failure(Exception e) {
+            callback.failure(e);
+        }
+    }
+
+    private String getUpdateQuery() {
+        return "UPDATE " + NAME + " SET " +
+                    FIELD_ISSUE_DATE + "=?, " +
+                    FIELD_NUMBER + "=?, " +
+                    FIELD_PROVIDER + "=?, " +
+                    FIELD_PURCHASER + "=? " +
+                " WHERE " + FIELD_ID + "=?";
+    }
+
+    private PreparedStatement getUpdateStatement(Connection conn, OrderForm form) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(getUpdateQuery());
+        statement.setDate(1, Date.valueOf(form.getDate()));
+        statement.setLong(2, form.getNumber());
+        statement.setLong(3, form.getProvider().getId());
+        statement.setLong(4, form.getPurchaser().getId());
+        statement.setLong(5, form.getId());
+        return statement;
+    }
+
+    public void updateOrderForm(OrderForm form, Callback<OrderForm> callback) {
+        Connection conn;
+        try {
+            conn = Database.getDatabase().getConnection();
+        } catch (SQLException e) {
+            callback.failure(e);
+            return;
+        }
+
+        try {
+            try (PreparedStatement stmt = getUpdateStatement(conn, form)) {
+                stmt.executeUpdate();
+            }
+
+            OrderFormEntryTable orderFormEntryTable = new OrderFormEntryTable();
+            for (OrderFormEntry entry : form.getEntries()) {
+                orderFormEntryTable.updateEntry(entry);
+            }
+            conn.commit();
+            callback.success(form);
+        } catch (SQLException e) {
+            try { conn.rollback(); } catch (SQLException ignored) { }
             callback.failure(e);
         }
     }

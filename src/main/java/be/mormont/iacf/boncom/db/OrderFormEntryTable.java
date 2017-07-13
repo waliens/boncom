@@ -188,4 +188,37 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
             return entries;
         }
     }
+
+    private String updateEntryQuery(boolean hasId) {
+        return "INSERT OR REPLACE INTO " + NAME + " (" +
+                    FIELD_REFERENCE + ", " + FIELD_DESIGNATION + ", " +
+                    FIELD_QUANTITY + ", " + FIELD_UNIT_PRICE + ", " +
+                    FIELD_ORDER_FORM + ", " + FIELD_ID +
+                ") VALUES (" +
+                    "?, ?, ?, ?, ?, " +
+                    (hasId ? "?" : "(SELECT MAX(" + FIELD_ID + ") + 1 FROM " + NAME + ")") +
+                ")";
+    }
+
+    private PreparedStatement updateEntryStatement(Connection conn, OrderFormEntry entry) throws SQLException {
+        boolean hasId = entry.getId() != -1;
+        PreparedStatement statement = conn.prepareStatement(updateEntryQuery(hasId));
+        statement.setString(1, entry.getReference());
+        statement.setString(2, entry.getDesignation());
+        statement.setLong(3, entry.getQuantity());
+        statement.setBigDecimal(4, entry.getUnitPrice());
+        statement.setLong(5, entry.getOrderFormId());
+        if (hasId) {
+            statement.setLong(6, entry.getId());
+        }
+        return statement;
+    }
+
+    void updateEntry(OrderFormEntry entry) throws SQLException {
+        Connection conn = Database.getDatabase().getConnection();
+        try (PreparedStatement stmt = updateEntryStatement(conn, entry)) {
+            stmt.executeUpdate();
+        }
+    }
+
 }
