@@ -12,12 +12,10 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Pair;
 import javafx.util.converter.BigDecimalStringConverter;
@@ -91,13 +89,7 @@ public class OrderFormFormController implements Initializable {
 
         /* Entries table */
         entries = FXCollections.observableArrayList();
-        entries.addListener((ListChangeListener<OrderFormEntry>) c -> {
-            BigDecimal total = new BigDecimal(0);
-            for (OrderFormEntry entry : entries) {
-                total = total.add(entry.getTotal());
-            }
-            setTotal(total);
-        });
+        entries.addListener((ListChangeListener<OrderFormEntry>) c -> updateTotal());
         entriesTable.setItems(entries);
         entriesTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         entriesTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -127,9 +119,7 @@ public class OrderFormFormController implements Initializable {
             nodeCtrl.getValue().setOrderFormEntryHandler(entry -> entries.add(entry));
         });
 
-        deleteEntryButton.setOnMouseClicked(event -> {
-            entries.remove(entriesTable.getSelectionModel().getSelectedIndex());
-        });
+        deleteEntryButton.setOnMouseClicked(event -> entries.remove(entriesTable.getSelectionModel().getSelectedIndex()));
 
         // make cells editable
         entriesTable.setEditable(true);
@@ -143,8 +133,14 @@ public class OrderFormFormController implements Initializable {
         // value commit
         entriesTabColumnReference.setOnEditCommit(event -> getSelectedItem().setReference(event.getNewValue()));
         entriesTabColumnDesignation.setOnEditCommit(event -> getSelectedItem().setDesignation(event.getNewValue()));
-        entriesTabColumnQuantity.setOnEditCommit(event -> getSelectedItem().setQuantity(event.getNewValue()));
-        entriesTabColumnUnitPrice.setOnEditCommit(event -> getSelectedItem().setUnitPrice(event.getNewValue()));
+        entriesTabColumnQuantity.setOnEditCommit(event -> {
+            getSelectedItem().setQuantity(event.getNewValue());
+            refreshAllTotals();
+        });
+        entriesTabColumnUnitPrice.setOnEditCommit(event -> {
+            getSelectedItem().setUnitPrice(event.getNewValue());
+            refreshAllTotals();
+        });
 
         // names
         entriesTabColumnReference.setText("Réf.");
@@ -341,11 +337,30 @@ public class OrderFormFormController implements Initializable {
 
 
     /**
+     * Update the content of the total field with content of entries
+     */
+    private void updateTotal() {
+        BigDecimal total = new BigDecimal(0);
+        for (OrderFormEntry entry : entries) {
+            total = total.add(entry.getTotal());
+        }
+        setTotal(total);
+    }
+
+    /**
      * Set the formatted total field
      * @param total The total amount of money to display
      */
     private void setTotal(BigDecimal total) {
         totalField.setText(StringUtil.formatCurrency(total));
+    }
+
+    /**
+     * Refresh all the totals (column + field)
+     */
+    private void refreshAllTotals() {
+        entriesTable.refresh();
+        updateTotal();
     }
 
     // callback called when object is update when
