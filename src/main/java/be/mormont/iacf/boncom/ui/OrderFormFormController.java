@@ -8,16 +8,20 @@ import be.mormont.iacf.boncom.db.EntityTable;
 import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.db.UICallback;
 import be.mormont.iacf.boncom.util.StringUtil;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Pair;
+import javafx.util.converter.BigDecimalStringConverter;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -52,7 +56,7 @@ public class OrderFormFormController implements Initializable {
     @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnReference;
     @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnDesignation;
     @FXML private TableColumn<OrderFormEntry, Integer> entriesTabColumnQuantity;
-    @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnUnitPrice;
+    @FXML private TableColumn<OrderFormEntry, BigDecimal> entriesTabColumnUnitPrice;
     @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnTotal;
     @FXML private Label totalFieldLabel;
     @FXML private Label totalField;
@@ -127,6 +131,21 @@ public class OrderFormFormController implements Initializable {
             entries.remove(entriesTable.getSelectionModel().getSelectedIndex());
         });
 
+        // make cells editable
+        entriesTable.setEditable(true);
+        entriesTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
+        entriesTabColumnReference.setCellFactory(TextFieldTableCell.forTableColumn());
+        entriesTabColumnDesignation.setCellFactory(TextFieldTableCell.forTableColumn());
+        entriesTabColumnQuantity.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        entriesTabColumnUnitPrice.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
+        entriesTabColumnTotal.setEditable(false);
+
+        // value commit
+        entriesTabColumnReference.setOnEditCommit(event -> getSelectedItem().setReference(event.getNewValue()));
+        entriesTabColumnDesignation.setOnEditCommit(event -> getSelectedItem().setDesignation(event.getNewValue()));
+        entriesTabColumnQuantity.setOnEditCommit(event -> getSelectedItem().setQuantity(event.getNewValue()));
+        entriesTabColumnUnitPrice.setOnEditCommit(event -> getSelectedItem().setUnitPrice(event.getNewValue()));
+
         // names
         entriesTabColumnReference.setText("Réf.");
         entriesTabColumnDesignation.setText("Désignation");
@@ -134,12 +153,11 @@ public class OrderFormFormController implements Initializable {
         entriesTabColumnUnitPrice.setText("Prix unit.");
         entriesTabColumnTotal.setText("Total");
 
-
         // display
         entriesTabColumnReference.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getReference()));
         entriesTabColumnDesignation.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getDesignation()));
         entriesTabColumnQuantity.setCellValueFactory(params -> new ReadOnlyObjectWrapper<>(params.getValue().getQuantity()));
-        entriesTabColumnUnitPrice.setCellValueFactory(params -> new SimpleStringProperty(StringUtil.formatCurrency(params.getValue().getUnitPrice())));
+        entriesTabColumnUnitPrice.setCellValueFactory(params -> new ReadOnlyObjectWrapper<>(params.getValue().getUnitPrice()));
         entriesTabColumnTotal.setCellValueFactory(params -> new SimpleStringProperty(StringUtil.formatCurrency(params.getValue().getTotal())));
 
         /* Columns widths
@@ -334,4 +352,13 @@ public class OrderFormFormController implements Initializable {
     public interface OrderFormHandler {
         void handle(OrderForm form);
     }
+
+    /**
+     * @return Element that currently has focus
+     */
+    private OrderFormEntry getSelectedItem() {
+        return entriesTable.getSelectionModel().getSelectedItem(); //entriesTable.getItems().get();
+    }
+
+
 }
