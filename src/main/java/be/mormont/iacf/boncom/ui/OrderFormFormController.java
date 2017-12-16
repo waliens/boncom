@@ -21,14 +21,20 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.util.Pair;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.security.Key;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.ResourceBundle;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 
 /**
@@ -102,11 +108,7 @@ public class OrderFormFormController implements Initializable {
         addEntryButton.setText("Ajouter");
         deleteEntryButton.setText("Supprimer");
         setTableButtonsDisableProperty(false);
-
-        addEntryButton.setOnMouseClicked(event -> {
-            entries.add(getEmptyOrderFormEntry());
-        });
-
+        addEntryButton.setOnMouseClicked(event -> entries.add(getEmptyOrderFormEntry()));
         deleteEntryButton.setOnMouseClicked(event -> entries.remove(entriesTable.getSelectionModel().getSelectedIndex()));
 
         // make cells editable
@@ -269,7 +271,7 @@ public class OrderFormFormController implements Initializable {
         this.orderForm = orderForm;
         refresh();
     }
-
+    
     private OrderForm getOrderForm() {
         String strNumber = StringUtil.getNotEmptyOrNull(numberField.getText());
         long number;
@@ -386,7 +388,8 @@ public class OrderFormFormController implements Initializable {
                 createTextField();
                 setText(null);
                 setGraphic(field);
-                field.selectAll();
+                field.requestFocus();
+                field.selectPositionCaret(field.getText().length());
             }
         }
 
@@ -429,14 +432,49 @@ public class OrderFormFormController implements Initializable {
                     commit();
                 }
             });
+
             EventHandler<? super KeyEvent> enterKeyHandler = event -> {
                 if (event.getCode() == KeyCode.ENTER) {
                     commit();
                     event.consume();
+                    return;
                 }
+
+                // current cell info
+                int nbColumns = entriesTable.getColumns().size(), nbRows = entries.size();
+                TablePosition<OrderFormEntry, ?> currCell = entriesTable.getEditingCell();
+                int currRow = currCell.getRow(), currCol = currCell.getColumn();
+
+                // check next cell, nextCellIdx should be equal to currCellIdx if the movement is illegal
+                KeyCodeCombination backTab = new KeyCodeCombination(KeyCode.TAB, KeyCodeCombination.SHIFT_DOWN);
+                KeyCode code = event.getCode();
+
+                boolean goUp = code == KeyCode.UP && currRow != 0,
+                        goDown = code == KeyCode.DOWN && currRow != (nbRows - 1),
+                        goLeft = backTab.match(event) && currCol % nbColumns != 0,
+                        goRight = !backTab.match(event) && code == KeyCode.TAB && currCol % nbColumns != (nbColumns - 1);
+
+                if (!goLeft && !goRight && !goUp && !goDown) {
+                    return;
+                }
+
+                commit();
+
+                if (goLeft) {
+                    entriesTable.getSelectionModel().selectLeftCell();
+                } else if (goRight) {
+                    entriesTable.getSelectionModel().selectRightCell();
+                } else if (goUp) {
+                    entriesTable.getSelectionModel().selectAboveCell();
+                } else {
+                    entriesTable.getSelectionModel().selectBelowCell();
+                }
+
+                TablePosition newCell = entriesTable.getFocusModel().getFocusedCell();
+                entriesTable.edit(newCell.getRow(), newCell.getTableColumn());
+                event.consume();
             };
             field.setOnKeyPressed(enterKeyHandler);
-            field.setOnKeyReleased(enterKeyHandler);
         }
 
         /**
