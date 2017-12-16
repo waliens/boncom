@@ -9,19 +9,20 @@ import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.db.UICallback;
 import be.mormont.iacf.boncom.util.StringUtil;
 import javafx.beans.property.*;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.util.Pair;
-import javafx.util.converter.BigDecimalStringConverter;
-import javafx.util.converter.IntegerStringConverter;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -425,9 +426,17 @@ public class OrderFormFormController implements Initializable {
             field.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
             field.focusedProperty().addListener((observable, oldValue, newValue) -> {
                 if (!newValue) {
-                    commitEdit(fromString(field.getText()));
+                    commit();
                 }
             });
+            EventHandler<? super KeyEvent> enterKeyHandler = event -> {
+                if (event.getCode() == KeyCode.ENTER) {
+                    commit();
+                    event.consume();
+                }
+            };
+            field.setOnKeyPressed(enterKeyHandler);
+            field.setOnKeyReleased(enterKeyHandler);
         }
 
         /**
@@ -435,6 +444,13 @@ public class OrderFormFormController implements Initializable {
          */
         private String getString() {
             return getItem() == null ? "" : getItem().toString();
+        }
+
+        /**
+         * Commit the current field value
+         */
+        private void commit() {
+            commitEdit(fromString(field.getText()));
         }
 
         abstract T fromString(String v);
