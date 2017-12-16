@@ -9,6 +9,8 @@ import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.db.UICallback;
 import be.mormont.iacf.boncom.util.StringUtil;
 import javafx.beans.property.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -48,8 +50,7 @@ public class OrderFormFormController implements Initializable {
     @FXML private DatePicker dateField;
     @FXML private Label entriesTableLabel;
     @FXML private Button deleteEntryButton;
-    @FXML private Button editEntryButton;
-    @FXML private Button createEntryButton;
+    @FXML private Button addEntryButton;
     @FXML private TableView<OrderFormEntry> entriesTable;
     @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnReference;
     @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnDesignation;
@@ -97,26 +98,12 @@ public class OrderFormFormController implements Initializable {
         });
 
         // buttons
-        editEntryButton.setText("Modifier");
-        createEntryButton.setText("Ajouter");
+        addEntryButton.setText("Ajouter");
         deleteEntryButton.setText("Supprimer");
         setTableButtonsDisableProperty(false);
 
-        editEntryButton.setOnMouseClicked(event -> {
-            Pair<Parent, OrderFormEntryFormController> nodeCtrl = popEditEntryForm();
-            nodeCtrl.getValue().setOrderFormEntry(entriesTable.getSelectionModel().getSelectedItem());
-            nodeCtrl.getValue().setOrderFormEntryHandler(entry -> {
-                // Assumes that the selection cannot change when the user is in the order form entry form !!
-                int index = entriesTable.getSelectionModel().getSelectedIndex();
-                entries.remove(index);
-                entries.add(index, entry);
-            });
-        });
-
-        createEntryButton.setOnMouseClicked(event -> {
-            Pair<Parent, OrderFormEntryFormController> nodeCtrl = popEditEntryForm();
-            nodeCtrl.getValue().setOrderFormEntry(null);
-            nodeCtrl.getValue().setOrderFormEntryHandler(entry -> entries.add(entry));
+        addEntryButton.setOnMouseClicked(event -> {
+            entries.add(getEmptyOrderFormEntry());
         });
 
         deleteEntryButton.setOnMouseClicked(event -> entries.remove(entriesTable.getSelectionModel().getSelectedIndex()));
@@ -124,10 +111,10 @@ public class OrderFormFormController implements Initializable {
         // make cells editable
         entriesTable.setEditable(true);
         entriesTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
-        entriesTabColumnReference.setCellFactory(TextFieldTableCell.forTableColumn());
-        entriesTabColumnDesignation.setCellFactory(TextFieldTableCell.forTableColumn());
-        entriesTabColumnQuantity.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
-        entriesTabColumnUnitPrice.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
+        entriesTabColumnReference.setCellFactory(col -> new StringEditingCell());
+        entriesTabColumnDesignation.setCellFactory(col -> new StringEditingCell());
+        entriesTabColumnQuantity.setCellFactory(col -> new IntegerEditingCell());
+        entriesTabColumnUnitPrice.setCellFactory(col -> new BigDecimalEditingCell());
         entriesTabColumnTotal.setEditable(false);
 
         // value commit
@@ -327,7 +314,6 @@ public class OrderFormFormController implements Initializable {
      * @param v True for enabling false for disabling
      */
     private void setTableButtonsDisableProperty(boolean v) {
-        editEntryButton.setDisable(!v);
         deleteEntryButton.setDisable(!v);
     }
 
@@ -363,17 +349,115 @@ public class OrderFormFormController implements Initializable {
         updateTotal();
     }
 
+    /**
+     * @return Element that currently has focus
+     */
+    private OrderFormEntry getSelectedItem() {
+        return entriesTable.getSelectionModel().getSelectedItem();
+    }
+
+    /**
+     * @return An order form entry with pre-filled values to be changed
+     */
+    private static OrderFormEntry getEmptyOrderFormEntry() {
+        return new OrderFormEntry("XX", "XX", 0, new BigDecimal(0));
+    }
+
     // callback called when object is update when
     public interface OrderFormHandler {
         void handle(OrderForm form);
     }
 
-    /**
-     * @return Element that currently has focus
+    /** Editing cell
+     * - commit on focus loss
+     * @param <T> Type of the stored element
      */
-    private OrderFormEntry getSelectedItem() {
-        return entriesTable.getSelectionModel().getSelectedItem(); //entriesTable.getItems().get();
+    abstract class EditingCell<T> extends TableCell<OrderFormEntry, T> {
+
+        private TextField field = null;
+
+        public EditingCell() { }
+
+        @Override
+        public void startEdit() {
+            if (!isEmpty()) {
+                super.startEdit();
+                createTextField();
+                setText(null);
+                setGraphic(field);
+                field.selectAll();
+            }
+        }
+
+        @Override
+        public void cancelEdit() {
+            super.cancelEdit();
+            setText(getString());
+            setGraphic(null);
+        }
+
+        @Override
+        protected void updateItem(T item, boolean empty) {
+            super.updateItem(item, empty);
+
+            if (empty) {
+                setText(null);
+                setGraphic(null);
+            } else {
+                if (isEditing()) {
+                    if (field != null) {
+                        field.setText(getString());
+                    }
+                    setText(null);
+                    setGraphic(field);
+                } else {
+                    setText(getString());
+                    setGraphic(null);
+                }
+            }
+        }
+
+        /**
+         * Create the text field to edit the table
+         */
+        private void createTextField() {
+            field = new TextField(getString());
+            field.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
+            field.focusedProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue) {
+                    commitEdit(fromString(field.getText()));
+                }
+            });
+        }
+
+        /**
+         * @return stored value as a string
+         */
+        private String getString() {
+            return getItem() == null ? "" : getItem().toString();
+        }
+
+        abstract T fromString(String v);
     }
 
+    class BigDecimalEditingCell extends EditingCell<BigDecimal> {
+        @Override
+        BigDecimal fromString(String v) {
+            return new BigDecimal(v);
+        }
+    }
 
+    class StringEditingCell extends EditingCell<String> {
+        @Override
+        String fromString(String v) {
+            return v;
+        }
+    }
+
+    class IntegerEditingCell extends EditingCell<Integer> {
+        @Override
+        Integer fromString(String v) {
+            return Integer.parseInt(v);
+        }
+    }
 }
