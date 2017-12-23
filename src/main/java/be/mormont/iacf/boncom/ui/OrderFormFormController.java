@@ -7,6 +7,7 @@ import be.mormont.iacf.boncom.db.Callback;
 import be.mormont.iacf.boncom.db.EntityTable;
 import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.db.UICallback;
+import be.mormont.iacf.boncom.ui.util.ObservableOrderFormEntry;
 import be.mormont.iacf.boncom.util.StringUtil;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -22,19 +23,17 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.util.Pair;
 
 import java.math.BigDecimal;
 import java.net.URL;
-import java.security.Key;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collection;
 import java.util.ResourceBundle;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -58,16 +57,16 @@ public class OrderFormFormController implements Initializable {
     @FXML private Label entriesTableLabel;
     @FXML private Button deleteEntryButton;
     @FXML private Button addEntryButton;
-    @FXML private TableView<OrderFormEntry> entriesTable;
-    @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnReference;
-    @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnDesignation;
-    @FXML private TableColumn<OrderFormEntry, Integer> entriesTabColumnQuantity;
-    @FXML private TableColumn<OrderFormEntry, BigDecimal> entriesTabColumnUnitPrice;
-    @FXML private TableColumn<OrderFormEntry, String> entriesTabColumnTotal;
+    @FXML private TableView<ObservableOrderFormEntry> entriesTable;
+    @FXML private TableColumn<ObservableOrderFormEntry, String> entriesTabColumnReference;
+    @FXML private TableColumn<ObservableOrderFormEntry, String> entriesTabColumnDesignation;
+    @FXML private TableColumn<ObservableOrderFormEntry, Integer> entriesTabColumnQuantity;
+    @FXML private TableColumn<ObservableOrderFormEntry, BigDecimal> entriesTabColumnUnitPrice;
+    @FXML private TableColumn<ObservableOrderFormEntry, BigDecimal> entriesTabColumnTotal;
     @FXML private Label totalFieldLabel;
     @FXML private Label totalField;
 
-    private ObservableList<OrderFormEntry> entries;
+    private ObservableList<ObservableOrderFormEntry> entries;
     private ObservableList<Entity> purchasersList;
     private ObservableList<Entity> providersList;
     private OrderForm orderForm = null;
@@ -97,7 +96,7 @@ public class OrderFormFormController implements Initializable {
 
         /* Entries table */
         entries = FXCollections.observableArrayList();
-        entries.addListener((ListChangeListener<OrderFormEntry>) c -> updateTotal());
+        entries.addListener((ListChangeListener<ObservableOrderFormEntry>) c -> updateTotal());
         entriesTable.setItems(entries);
         entriesTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         entriesTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -140,11 +139,11 @@ public class OrderFormFormController implements Initializable {
         entriesTabColumnTotal.setText("Total");
 
         // display
-        entriesTabColumnReference.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getReference()));
-        entriesTabColumnDesignation.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getDesignation()));
-        entriesTabColumnQuantity.setCellValueFactory(params -> new ReadOnlyObjectWrapper<>(params.getValue().getQuantity()));
-        entriesTabColumnUnitPrice.setCellValueFactory(params -> new ReadOnlyObjectWrapper<>(params.getValue().getUnitPrice()));
-        entriesTabColumnTotal.setCellValueFactory(params -> new SimpleStringProperty(StringUtil.formatCurrency(params.getValue().getTotal())));
+        entriesTabColumnReference.setCellValueFactory(param -> param.getValue().referenceProperty());
+        entriesTabColumnDesignation.setCellValueFactory(param -> param.getValue().designationProperty());
+        entriesTabColumnQuantity.setCellValueFactory(param -> param.getValue().quantityProperty().asObject());
+        entriesTabColumnUnitPrice.setCellValueFactory(param -> param.getValue().unitPriceProperty());
+        entriesTabColumnTotal.setCellValueFactory(param -> param.getValue().totalPriceProperty());
 
         /* Columns widths
          *  Ref  : 1/9
@@ -205,7 +204,7 @@ public class OrderFormFormController implements Initializable {
             formTitle.setText("Mise à jour d'un bon de commande (" + orderForm.getNumber() + ")");
             numberField.setText(Long.toString(orderForm.getNumber()));
             dateField.setValue(orderForm.getDate());
-            entries.addAll(orderForm.getEntries());
+            entries.addAll(orderForm.getEntries().stream().map(ObservableOrderFormEntry::new).collect(Collectors.toCollection(ArrayList::new)));
             submitButton.setText("Mettre à jour");
             submitButton.setOnMouseClicked(e -> {
                 OrderForm orderForm = getOrderForm();
@@ -293,7 +292,10 @@ public class OrderFormFormController implements Initializable {
             return null;
         }
 
-        ArrayList<OrderFormEntry> addedEntries = new ArrayList<>(entries);
+        ArrayList<OrderFormEntry> addedEntries = entries.stream()
+                .map(ObservableOrderFormEntry::toOrderFormEntry)
+                .collect(Collectors.toCollection(ArrayList::new));
+
         if (addedEntries.size() < 1) {
             AlertHelper.popEmptyField("entrées");
             return null;
@@ -304,7 +306,7 @@ public class OrderFormFormController implements Initializable {
         // add ids if update
         if (orderForm != null) {
             newOrderForm.setId(orderForm.getId());
-            for (OrderFormEntry entry: entries) {
+            for (OrderFormEntry entry: addedEntries) {
                 entry.setOrderFormId(orderForm.getId());
             }
         }
@@ -330,8 +332,8 @@ public class OrderFormFormController implements Initializable {
      */
     private void updateTotal() {
         BigDecimal total = new BigDecimal(0);
-        for (OrderFormEntry entry : entries) {
-            total = total.add(entry.getTotal());
+        for (ObservableOrderFormEntry entry : entries) {
+            total = total.add(entry.getTotalPrice());
         }
         setTotal(total);
     }
@@ -348,22 +350,21 @@ public class OrderFormFormController implements Initializable {
      * Refresh all the totals (column + field)
      */
     private void refreshAllTotals() {
-        entriesTable.refresh();
         updateTotal();
     }
 
     /**
      * @return Element that currently has focus
      */
-    private OrderFormEntry getSelectedItem() {
+    private ObservableOrderFormEntry getSelectedItem() {
         return entriesTable.getSelectionModel().getSelectedItem();
     }
 
     /**
      * @return An order form entry with pre-filled values to be changed
      */
-    private static OrderFormEntry getEmptyOrderFormEntry() {
-        return new OrderFormEntry("XX", "XX", 0, new BigDecimal(0));
+    private static ObservableOrderFormEntry getEmptyOrderFormEntry() {
+        return new ObservableOrderFormEntry("XX", "XX", 0, new BigDecimal(0));
     }
 
     // callback called when object is update when
@@ -375,7 +376,7 @@ public class OrderFormFormController implements Initializable {
      * - commit on focus loss
      * @param <T> Type of the stored element
      */
-    abstract class EditingCell<T> extends TableCell<OrderFormEntry, T> {
+    abstract class EditingCell<T> extends TableCell<ObservableOrderFormEntry, T> {
 
         private TextField field = null;
 
@@ -389,7 +390,6 @@ public class OrderFormFormController implements Initializable {
                 setText(null);
                 setGraphic(field);
                 field.requestFocus();
-                field.selectPositionCaret(field.getText().length());
             }
         }
 
@@ -442,7 +442,7 @@ public class OrderFormFormController implements Initializable {
 
                 // current cell info
                 int nbColumns = entriesTable.getColumns().size(), nbRows = entries.size();
-                TablePosition<OrderFormEntry, ?> currCell = entriesTable.getEditingCell();
+                TablePosition<ObservableOrderFormEntry, ?> currCell = entriesTable.getEditingCell();
                 int currRow = currCell.getRow(), currCol = currCell.getColumn();
 
                 // check next cell, nextCellIdx should be equal to currCellIdx if the movement is illegal
