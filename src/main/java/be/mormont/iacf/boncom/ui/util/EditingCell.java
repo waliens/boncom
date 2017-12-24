@@ -37,14 +37,13 @@ public abstract class EditingCell<D, T> extends TableCell<D, T> {
     @Override
     protected void updateItem(T item, boolean empty) {
         super.updateItem(item, empty);
-
         if (empty) {
             setText(null);
             setGraphic(null);
         } else {
             if (isEditing()) {
                 if (field != null) {
-                    field.setText(getString());
+                    field.setText(getEditableString());
                 }
                 setText(null);
                 setGraphic(field);
@@ -59,7 +58,7 @@ public abstract class EditingCell<D, T> extends TableCell<D, T> {
      * Create the text field to edit the table
      */
     private void createTextField() {
-        field = new TextField(getString());
+        field = new TextField(getEditableString());
         field.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
         field.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
@@ -114,11 +113,16 @@ public abstract class EditingCell<D, T> extends TableCell<D, T> {
     }
 
     /**
-     * @return stored value as a string
+     * @return Value to display when cell is not in editable mode
      */
-    public String getString() {
+    protected String getString() {
         return getItem() == null ? "" : getItem().toString();
     }
+
+    /**
+     * @return Value to return when the cell gets in editable mode
+     */
+    protected String getEditableString() { return getString(); }
 
     /**
      * Commit the current field value

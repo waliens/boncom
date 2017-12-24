@@ -10,6 +10,7 @@ import be.mormont.iacf.boncom.db.UICallback;
 import be.mormont.iacf.boncom.ui.util.EditingCell;
 import be.mormont.iacf.boncom.ui.util.ObservableOrderFormEntry;
 import be.mormont.iacf.boncom.util.StringUtil;
+import com.sun.xml.internal.bind.annotation.OverrideAnnotationOf;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -130,7 +131,8 @@ public class OrderFormFormController implements Initializable {
         entriesTabColumnReference.setCellFactory(col -> new StringEditingCell());
         entriesTabColumnDesignation.setCellFactory(col -> new StringEditingCell());
         entriesTabColumnQuantity.setCellFactory(col -> new IntegerEditingCell());
-        entriesTabColumnUnitPrice.setCellFactory(col -> new BigDecimalEditingCell());
+        entriesTabColumnUnitPrice.setCellFactory(col -> new CurrencyEditingCell());
+        entriesTabColumnTotal.setCellFactory(col -> new CurrencyEditingCell());
         entriesTabColumnTotal.setEditable(false);
 
         // value commit
@@ -399,8 +401,10 @@ public class OrderFormFormController implements Initializable {
         void handle(OrderForm form);
     }
 
-    class BigDecimalEditingCell extends EditingCell<ObservableOrderFormEntry, BigDecimal> {
+    class CurrencyEditingCell extends EditingCell<ObservableOrderFormEntry, BigDecimal> {
         @Override protected BigDecimal fromString(String v) { return new BigDecimal(v); }
+        @Override public String getString() { return StringUtil.formatCurrency(getItem()); }
+        @Override protected String getEditableString() { return getItem().toString(); }
     }
 
     class StringEditingCell extends EditingCell<ObservableOrderFormEntry, String> {
