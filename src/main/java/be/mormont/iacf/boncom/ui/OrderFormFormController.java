@@ -15,15 +15,18 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.util.Pair;
 
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -33,7 +36,7 @@ import java.util.stream.Collectors;
  * By  : Mormont Romain
  */
 public class OrderFormFormController implements Initializable {
-    private static String EDIT_ENTRY_FORM_FXML = "order_form_entry_form.fxml";
+    private static String SEARCH_ENTRY_FORM_FXML = "search_order_form_entry_form.fxml";
     @FXML private Label formTitle;
     @FXML private Label numberFieldLabel;
     @FXML private Label numberFieldMessageLabel;
@@ -49,6 +52,7 @@ public class OrderFormFormController implements Initializable {
     @FXML private Label entriesTableLabel;
     @FXML private Button deleteEntryButton;
     @FXML private Button addEntryButton;
+    @FXML private Button searchEntryButton;
     @FXML private TableView<ObservableOrderFormEntry> entriesTable;
     @FXML private TableColumn<ObservableOrderFormEntry, String> entriesTabColumnReference;
     @FXML private TableColumn<ObservableOrderFormEntry, String> entriesTabColumnDesignation;
@@ -96,11 +100,29 @@ public class OrderFormFormController implements Initializable {
         });
 
         // buttons
-        addEntryButton.setText("Ajouter");
+        addEntryButton.setText("Créer");
         deleteEntryButton.setText("Supprimer");
+        searchEntryButton.setText("Ajouter");
         setTableButtonsDisableProperty(false);
         addEntryButton.setOnMouseClicked(event -> entries.add(getEmptyOrderFormEntry()));
         deleteEntryButton.setOnMouseClicked(event -> entries.remove(entriesTable.getSelectionModel().getSelectedIndex()));
+        searchEntryButton.setOnMouseClicked(event -> {
+            Entity provider = providerField.getValue();
+            if (provider == null) {
+                AlertHelper.popEmptyField("fournisseur");
+                return;
+            }
+            Pair<Parent, SearchOrderFormEntryForm> nodeCtrl = popSearchEntryForm();
+            nodeCtrl.getValue().setProvider(provider);
+            nodeCtrl.getValue().setHandler(searched -> {
+                // remove origin info of the original entries to avoid overwriting them
+                for (OrderFormEntry entry : searched) {
+                    entry.setId(-1);
+                    entry.setOrderFormId(-1);
+                }
+                entries.addAll(convertEntries(searched));
+            });
+        });
 
         // make cells editable
         entriesTable.setEditable(true);
@@ -196,7 +218,7 @@ public class OrderFormFormController implements Initializable {
             formTitle.setText("Mise à jour d'un bon de commande (" + orderForm.getNumber() + ")");
             numberField.setText(Long.toString(orderForm.getNumber()));
             dateField.setValue(orderForm.getDate());
-            entries.addAll(orderForm.getEntries().stream().map(ObservableOrderFormEntry::new).collect(Collectors.toCollection(ArrayList::new)));
+            entries.addAll(convertEntries(orderForm.getEntries()));
             submitButton.setText("Mettre à jour");
             submitButton.setOnMouseClicked(e -> {
                 OrderForm orderForm = getOrderForm();
@@ -284,9 +306,7 @@ public class OrderFormFormController implements Initializable {
             return null;
         }
 
-        ArrayList<OrderFormEntry> addedEntries = entries.stream()
-                .map(ObservableOrderFormEntry::toOrderFormEntry)
-                .collect(Collectors.toCollection(ArrayList::new));
+        List<OrderFormEntry> addedEntries = convertObservableEntries(entries);
 
         if (addedEntries.size() < 1) {
             AlertHelper.popEmptyField("entrées");
@@ -304,6 +324,26 @@ public class OrderFormFormController implements Initializable {
         }
 
         return newOrderForm;
+    }
+
+
+    private Pair<Parent, SearchOrderFormEntryForm> popSearchEntryForm() {
+        return FXMLModalHelper.popModal(RootSceneController.FXML_BASE_PATH + SEARCH_ENTRY_FORM_FXML, formTitle.getScene().getWindow());
+    }
+
+    /** Convert list of OrderFOrmEntry to a list of ObservableOrderFormEntry */
+    private static List<ObservableOrderFormEntry> convertEntries(List<OrderFormEntry> entries) {
+        return entries.stream()
+                .map(ObservableOrderFormEntry::new)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /** Convert list of ObservableOrderFOrmEntry to a list of OrderFormEntry */
+    private static List<OrderFormEntry> convertObservableEntries(List<ObservableOrderFormEntry> entries) {
+        return entries.stream()
+                .map(ObservableOrderFormEntry::toOrderFormEntry)
+                .collect(Collectors.toCollection(ArrayList::new));
+
     }
 
     /**

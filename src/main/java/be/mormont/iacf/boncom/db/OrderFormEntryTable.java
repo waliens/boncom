@@ -1,5 +1,6 @@
 package be.mormont.iacf.boncom.db;
 
+import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
 import com.sun.org.apache.regexp.internal.RE;
@@ -132,7 +133,7 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
         );
     }
 
-    void getOrderFormEntries(OrderForm orderForm, Callback<ArrayList<OrderFormEntry>> callback) {
+    public void getOrderFormEntries(OrderForm orderForm, Callback<ArrayList<OrderFormEntry>> callback) {
         try {
             Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<OrderFormEntry>>() {
                 @Override
@@ -176,6 +177,50 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
         PreparedStatement statement = conn.prepareStatement(selectFormEntriesQuery());
         statement.setLong(1, orderFormId);
         return statement;
+    }
+
+    private String selectFormEntriesByProviderQuery() {
+        return "SELECT " +
+                    FIELD_ID + ", " + FIELD_ORDER_FORM + ", " + FIELD_REFERENCE + ", " +
+                    FIELD_DESIGNATION + ", " + FIELD_QUANTITY + ", " + FIELD_UNIT_PRICE +
+                " FROM " + NAME +
+                " NATURAL JOIN ( " +
+                "   SELECT " + OrderFormTable.FIELD_ID + " AS " + FIELD_ORDER_FORM +
+                "   FROM " + OrderFormTable.NAME +
+                "   WHERE " + OrderFormTable.FIELD_PROVIDER + "=? " +
+                " ) AS order_forms";
+    }
+
+    private PreparedStatement selectFormEntriesByProviderStatement(Connection conn, long providerId) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(selectFormEntriesByProviderQuery());
+        statement.setLong(1, providerId);
+        return statement;
+    }
+
+    /**
+     * Fetch all order form entries for the given provider
+     * @param provider Provider entity (null for getting all order form entries)
+     * @param callback Callback to call when results are ready, or on failure
+     */
+    public void getOrderFormEntriesByProvider(Entity provider, Callback<ArrayList<OrderFormEntry>> callback) {
+        try {
+            Connection conn = Database.getDatabase().getConnection();
+            PreparedStatement _statement;
+            if (provider != null) {
+                _statement = selectFormEntriesByProviderStatement(conn, provider.getId());
+            } else {
+                _statement = selectAllStatement(conn);
+            }
+            try (PreparedStatement statement = _statement; ResultSet set = statement.executeQuery()) {
+                ArrayList<OrderFormEntry> entries = new ArrayList<>();
+                while(set.next()) {
+                    entries.add(makeEntry(set));
+                }
+                callback.success(entries);
+            }
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
     }
 
     ArrayList<OrderFormEntry> getFormEntries(long orderFormid) throws SQLException {

@@ -65,6 +65,7 @@
                 <buttons>
                     <Button fx:id="deleteEntryButton" mnemonicParsing="false" />
                     <Button fx:id="addEntryButton" mnemonicParsing="false" />
+                    <Button fx:id="searchEntryButton" mnemonicParsing="false" />
                 </buttons>
             </ButtonBar>
             <TableView fx:id="entriesTable" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="4" >

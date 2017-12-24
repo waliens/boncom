@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Romain on 28-06-17.
@@ -19,23 +20,24 @@ public class OrderForm implements Comparable<OrderForm> {
     private LocalDate date;
     private ArrayList<OrderFormEntry> entries;
 
-    public OrderForm(long id, long number, Entity purchaser, Entity provider, LocalDate date, ArrayList<OrderFormEntry> entries) {
+    public OrderForm(long id, long number, Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries) {
         this.number = number;
         this.purchaser = purchaser;
         this.provider = provider;
         this.date = date;
-        this.entries = entries;
+        this.entries = new ArrayList<>();
+        this.entries.addAll(entries);
         this.id = id;
     }
 
-    public OrderForm(long number, Entity purchaser, Entity provider, LocalDate date, ArrayList<OrderFormEntry> entries) {
+    public OrderForm(long number, Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries) {
         this(-1, number, purchaser, provider, date, entries);
     }
 
     /**
      * Constructor for order form with undefined number
      */
-    public OrderForm(Entity purchaser, Entity provider, LocalDate date, ArrayList<OrderFormEntry> entries) {
+    public OrderForm(Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries) {
         this(UNDEFINED_NUMBER, purchaser, provider, date, entries);
     }
 
