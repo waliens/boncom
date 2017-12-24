@@ -7,33 +7,25 @@ import be.mormont.iacf.boncom.db.Callback;
 import be.mormont.iacf.boncom.db.EntityTable;
 import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.db.UICallback;
+import be.mormont.iacf.boncom.ui.util.EditingCell;
 import be.mormont.iacf.boncom.ui.util.ObservableOrderFormEntry;
 import be.mormont.iacf.boncom.util.StringUtil;
-import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyEvent;
-import javafx.util.Pair;
 
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -322,11 +314,6 @@ public class OrderFormFormController implements Initializable {
         deleteEntryButton.setDisable(!v);
     }
 
-    private Pair<Parent, OrderFormEntryFormController> popEditEntryForm() {
-        return FXMLModalHelper.popModal(RootSceneController.FXML_BASE_PATH + EDIT_ENTRY_FORM_FXML, formTitle.getScene().getWindow());
-    }
-
-
     /**
      * Update the content of the total field with content of entries
      */
@@ -372,145 +359,18 @@ public class OrderFormFormController implements Initializable {
         void handle(OrderForm form);
     }
 
-    /** Editing cell
-     * - commit on focus loss
-     * @param <T> Type of the stored element
-     */
-    abstract class EditingCell<T> extends TableCell<ObservableOrderFormEntry, T> {
-
-        private TextField field = null;
-
-        public EditingCell() { }
-
-        @Override
-        public void startEdit() {
-            if (!isEmpty()) {
-                super.startEdit();
-                createTextField();
-                setText(null);
-                setGraphic(field);
-                field.requestFocus();
-            }
-        }
-
-        @Override
-        public void cancelEdit() {
-            super.cancelEdit();
-            setText(getString());
-            setGraphic(null);
-        }
-
-        @Override
-        protected void updateItem(T item, boolean empty) {
-            super.updateItem(item, empty);
-
-            if (empty) {
-                setText(null);
-                setGraphic(null);
-            } else {
-                if (isEditing()) {
-                    if (field != null) {
-                        field.setText(getString());
-                    }
-                    setText(null);
-                    setGraphic(field);
-                } else {
-                    setText(getString());
-                    setGraphic(null);
-                }
-            }
-        }
-
-        /**
-         * Create the text field to edit the table
-         */
-        private void createTextField() {
-            field = new TextField(getString());
-            field.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
-            field.focusedProperty().addListener((observable, oldValue, newValue) -> {
-                if (!newValue) {
-                    commit();
-                }
-            });
-
-            EventHandler<? super KeyEvent> enterKeyHandler = event -> {
-                if (event.getCode() == KeyCode.ENTER) {
-                    commit();
-                    event.consume();
-                    return;
-                }
-
-                // current cell info
-                int nbColumns = entriesTable.getColumns().size(), nbRows = entries.size();
-                TablePosition<ObservableOrderFormEntry, ?> currCell = entriesTable.getEditingCell();
-                int currRow = currCell.getRow(), currCol = currCell.getColumn();
-
-                // check next cell, nextCellIdx should be equal to currCellIdx if the movement is illegal
-                KeyCodeCombination backTab = new KeyCodeCombination(KeyCode.TAB, KeyCodeCombination.SHIFT_DOWN);
-                KeyCode code = event.getCode();
-
-                boolean goUp = code == KeyCode.UP && currRow != 0,
-                        goDown = code == KeyCode.DOWN && currRow != (nbRows - 1),
-                        goLeft = backTab.match(event) && currCol % nbColumns != 0,
-                        goRight = !backTab.match(event) && code == KeyCode.TAB && currCol % nbColumns != (nbColumns - 1);
-
-                if (!goLeft && !goRight && !goUp && !goDown) {
-                    return;
-                }
-
-                commit();
-
-                if (goLeft) {
-                    entriesTable.getSelectionModel().selectLeftCell();
-                } else if (goRight) {
-                    entriesTable.getSelectionModel().selectRightCell();
-                } else if (goUp) {
-                    entriesTable.getSelectionModel().selectAboveCell();
-                } else {
-                    entriesTable.getSelectionModel().selectBelowCell();
-                }
-
-                TablePosition newCell = entriesTable.getFocusModel().getFocusedCell();
-                entriesTable.edit(newCell.getRow(), newCell.getTableColumn());
-                event.consume();
-            };
-            field.setOnKeyPressed(enterKeyHandler);
-        }
-
-        /**
-         * @return stored value as a string
-         */
-        private String getString() {
-            return getItem() == null ? "" : getItem().toString();
-        }
-
-        /**
-         * Commit the current field value
-         */
-        private void commit() {
-            commitEdit(fromString(field.getText()));
-        }
-
-        abstract T fromString(String v);
+    class BigDecimalEditingCell extends EditingCell<ObservableOrderFormEntry, BigDecimal> {
+        @Override protected BigDecimal fromString(String v) { return new BigDecimal(v); }
     }
 
-    class BigDecimalEditingCell extends EditingCell<BigDecimal> {
-        @Override
-        BigDecimal fromString(String v) {
-            return new BigDecimal(v);
-        }
-    }
-
-    class StringEditingCell extends EditingCell<String> {
-        @Override
-        String fromString(String v) {
+    class StringEditingCell extends EditingCell<ObservableOrderFormEntry, String> {
+        @Override protected String fromString(String v) {
             return v;
         }
     }
 
-    class IntegerEditingCell extends EditingCell<Integer> {
-        @Override
-        Integer fromString(String v) {
+    class IntegerEditingCell extends EditingCell<ObservableOrderFormEntry, Integer> {
+        @Override protected Integer fromString(String v) {
             return Integer.parseInt(v);
         }
     }
