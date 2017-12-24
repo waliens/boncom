@@ -94,7 +94,7 @@ public class SearchOrderFormEntryForm implements Initializable {
         // set select of unselect buttons behavior
         addEntriesButton.setOnMouseClicked(e -> addItemsToSelected());
         removeEntriesButton.setOnMouseClicked(e -> selectedListView.getItems().removeAll(selectedListView.getSelectionModel().getSelectedItems()));
-}
+    }
 
     public void setProvider(Entity provider) {
         this.provider = provider;

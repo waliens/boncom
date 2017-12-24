@@ -6,7 +6,6 @@ import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.db.Callback;
 import be.mormont.iacf.boncom.db.EntityTable;
 import be.mormont.iacf.boncom.exceptions.FormContentException;
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -15,7 +14,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
