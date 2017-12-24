@@ -1,7 +1,9 @@
 package be.mormont.iacf.boncom.ui;
 
+import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.db.Callback;
+import be.mormont.iacf.boncom.db.EntityTable;
 import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.export.OrderFormXlsExporter;
 import be.mormont.iacf.boncom.util.StringUtil;
@@ -9,12 +11,16 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.WindowEvent;
 import javafx.util.Pair;
 
 import java.io.File;
@@ -53,8 +59,12 @@ public class RootSceneController implements Initializable {
     @FXML private TableColumn<OrderForm, Integer> orderFormCountColumn;
     @FXML private TableColumn<OrderForm, BigDecimal> orderFormTotalColumn;
     @FXML private TableColumn<OrderForm, String> orderFormProviderColumn;
+    @FXML private Label providerFilterLabel;
+    @FXML private ComboBox<Entity> providerFilterComboBox;
 
+    private ObservableList<Entity> providers;
     private ObservableList<OrderForm> orderForms;
+    private FilteredList<OrderForm> filteredOrderForms;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -70,6 +80,7 @@ public class RootSceneController implements Initializable {
         createProviderBox.setOnMouseClicked(event -> {
             Pair<Parent, ProviderFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_PROVIDER_FXML, titleLabel.getScene().getWindow());
             nodeCtrl.getValue().setEntity(null);
+            nodeCtrl.getKey().getScene().getWindow().setOnCloseRequest(e -> updateProviders());
         });
 
         // order forms
@@ -135,8 +146,29 @@ public class RootSceneController implements Initializable {
 
         // data
         orderForms = FXCollections.observableArrayList();
-        orderFormsTable.setItems(orderForms);
+        filteredOrderForms = new FilteredList<>(orderForms);
+        orderFormsTable.setItems(filteredOrderForms);
         refreshHistory();
+
+        // provider filtering
+        providers = FXCollections.observableArrayList();
+        providerFilterLabel.setText("Fournisseurs:");
+        providerFilterComboBox.setItems(providers);
+        providerFilterComboBox.setCellFactory(param -> new EntityListCell());
+        providerFilterComboBox.setButtonCell(new EntityListCell());
+        providerFilterComboBox.valueProperty().addListener(items -> {
+            Entity entity = providerFilterComboBox.getSelectionModel().getSelectedItem();
+            if(entity == null) {
+                filteredOrderForms.setPredicate(s -> true);
+            } else {
+                filteredOrderForms.setPredicate(s -> s.getProvider().getId() == entity.getId());
+            }
+        });
+        updateProviders();
+    }
+
+    private void updateProviders() {
+        new EntityTable().getAllEntities(entities -> providers.setAll(entities));
     }
 
     private void setTableButtonsDisableProperty(boolean enable) {

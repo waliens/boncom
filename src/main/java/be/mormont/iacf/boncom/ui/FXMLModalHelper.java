@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import javafx.util.Pair;
 
 /**
@@ -39,6 +40,7 @@ public class FXMLModalHelper {
      */
     static void closeModal(Parent source) {
         Stage stage = (Stage)source.getScene().getWindow();
-        stage.close();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+        // stage.close();
     }
 }
