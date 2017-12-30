@@ -103,7 +103,41 @@ public class ProviderFormController implements Initializable {
         } else {
             formTitle.setText("Mise à jour d'un fournisseur");
             submitButton.setText("Mettre à jour");
-            submitButton.setOnMouseClicked(event -> System.out.println("Mettre à jour"));
+            submitButton.setOnMouseClicked(event -> {
+                Entity updatedEntity;
+                try {
+                    updatedEntity = getEntityFromFields();
+                } catch (FormContentException e) {
+                    AlertHelper.popAlert(
+                            Alert.AlertType.ERROR,
+                            "Erreur",
+                            "Impossible d'ajouter l'entité",
+                            "Le formulaire contient des données incorrectes: " + e.getMessage(),
+                            true
+                    );
+                    return;
+                }
+                updatedEntity.setId(entity.getId());
+                new EntityTable().updateEntity(updatedEntity, new Callback<Entity>() {
+                    @Override
+                    public void success(Entity object) {
+                        Lg.getLogger(ProviderFormController.class).info("Updated entity '" + updatedEntity.getName() + "' with id:" + updatedEntity.getId());
+                        closeForm();
+                    }
+
+                    @Override
+                    public void failure(Exception e) {
+                        AlertHelper.popAlert(
+                                Alert.AlertType.ERROR,
+                                "Erreur",
+                                "Impossible d'ajouter l'entité",
+                                "L'ajout a échoué à cause de : " + e.getMessage(),
+                                true
+                        );
+                        Lg.getLogger(ProviderFormController.class).log(Level.WARNING, "Couldn't add the entity", e);
+                    }
+                });
+            });
             // pre-remplissage des champs
             nameField.setText(entity.getName());
             streetField.setText(entity.getAddress().getStreet());
@@ -153,6 +187,6 @@ public class ProviderFormController implements Initializable {
 
         String[] phones = getPhones();
         Address address = new Address(street, number, box, postCode, city);
-        return entity = new Entity(name, address, phones.length == 0 ? null : phones);
+        return new Entity(name, address, phones.length == 0 ? null : phones);
     }
 }

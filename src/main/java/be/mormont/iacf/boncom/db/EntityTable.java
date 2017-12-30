@@ -103,6 +103,7 @@ public class EntityTable extends BaseTable<Entity> {
         }
     }
 
+
     public void getEntity(long id, Callback<Entity> callback) {
         try {
             Database.getDatabase().executePreparedStatement(new Database.PreparedStatementWithReturnBuilder<Entity>() {
@@ -194,5 +195,52 @@ public class EntityTable extends BaseTable<Entity> {
      */
     public void getIacf(Callback<Entity> callback) {
         getEntity(IACF_ENTITY_ID, callback);
+    }
+
+    public void updateEntity(Entity entity, Callback<Entity> callback) {
+        try {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementNoReturnBuilder<Entity>() {
+                @Override
+                public PreparedStatement getStatement(Connection conn) throws SQLException {
+                    return updateStatement(entity, conn);
+                }
+
+                @Override
+                public void success(PreparedStatement statement) {
+                    callback.success(entity);
+                }
+
+                @Override
+                public void failure(Exception e) { callback.failure(e); }
+            }, true);
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
+    }
+
+    private String updateQuery() {
+        return "UPDATE " + NAME +
+                " SET "
+                 + FIELD_ENTITY_NAME + "=?, "
+                 + FIELD_PHONE_NUMBERS + "=?, "
+                 + FIELD_STREET + "=?, "
+                 + FIELD_HOUSE_NUMBER + "=?, "
+                 + FIELD_BOX + "=?, "
+                 + FIELD_POST_CODE + "=?, "
+                 + FIELD_CITY + "=? " +
+                " WHERE " + EntityTable.FIELD_ID + "=?";
+    }
+
+    private PreparedStatement updateStatement(Entity entity, Connection conn) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(updateQuery());
+        statement.setString(1, entity.getName());
+        statement.setString(2, entity.getPhonesAsString());
+        statement.setString(3, entity.getAddress().getStreet());
+        statement.setString(4, entity.getAddress().getNumber());
+        statement.setString(5, entity.getAddress().getBox());
+        statement.setString(6, entity.getAddress().getPostCode());
+        statement.setString(7, entity.getAddress().getCity());
+        statement.setLong(8, entity.getId());
+        return statement;
     }
 }
