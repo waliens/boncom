@@ -57,10 +57,8 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
     }
 
     @Override
-    PreparedStatement selectStatement(Connection conn, long id) throws SQLException {
-        PreparedStatement statement = conn.prepareStatement(selectQuery());
-        statement.setLong(1, id);
-        return statement;
+    String deleteQuery() {
+        return "DELETE FROM " + NAME + " WHERE " + FIELD_ID + "=?";
     }
 
     @Override
@@ -69,11 +67,6 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
                     FIELD_ID + ", " + FIELD_ORDER_FORM + ", " + FIELD_REFERENCE + ", " +
                     FIELD_DESIGNATION + ", " + FIELD_QUANTITY + ", " + FIELD_UNIT_PRICE +
                 " FROM " + NAME;
-    }
-
-    @Override
-    PreparedStatement selectAllStatement(Connection conn) throws SQLException {
-        return conn.prepareStatement(selectAllQuery());
     }
 
     String addBatchQuery(int n) {

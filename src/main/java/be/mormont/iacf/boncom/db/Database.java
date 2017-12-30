@@ -131,8 +131,8 @@ public class Database implements AutoCloseable {
                     OrderFormTable.FIELD_ISSUE_DATE + " DATE," +
                     OrderFormTable.FIELD_NUMBER + " INTEGER," +
                     "PRIMARY KEY (" + OrderFormTable.FIELD_ID + ")," +
-                    "FOREIGN KEY (" + OrderFormTable.FIELD_PROVIDER + ") REFERENCES " + EntityTable.NAME + "(" + EntityTable.FIELD_ID + ")," +
-                    "FOREIGN KEY (" + OrderFormTable.FIELD_PURCHASER + ") REFERENCES " + EntityTable.NAME + "(" + EntityTable.FIELD_ID + "))"
+                    "FOREIGN KEY (" + OrderFormTable.FIELD_PROVIDER + ") REFERENCES " + EntityTable.NAME + "(" + EntityTable.FIELD_ID + ") ON DELETE RESTRICT," +
+                    "FOREIGN KEY (" + OrderFormTable.FIELD_PURCHASER + ") REFERENCES " + EntityTable.NAME + "(" + EntityTable.FIELD_ID + ") ON DELETE RESTRICT )"
             );
 
             // create order form entry table
@@ -145,7 +145,7 @@ public class Database implements AutoCloseable {
                     OrderFormEntryTable.FIELD_QUANTITY + " INTEGER UNSIGNED," +
                     OrderFormEntryTable.FIELD_UNIT_PRICE + " DECIMAL(20, 2)," +
                     "PRIMARY KEY (" + OrderFormEntryTable.FIELD_ID + ")," +
-                    "FOREIGN KEY (" + OrderFormEntryTable.FIELD_ORDER_FORM + ") REFERENCES " + OrderFormTable.NAME + "(" + OrderFormTable.FIELD_ID + "))"
+                    "FOREIGN KEY (" + OrderFormEntryTable.FIELD_ORDER_FORM + ") REFERENCES " + OrderFormTable.NAME + "(" + OrderFormTable.FIELD_ID + ") ON DELETE CASCADE )"
             );
 
             // insert default data

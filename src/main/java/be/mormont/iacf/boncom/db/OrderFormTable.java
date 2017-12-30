@@ -4,15 +4,9 @@ import be.mormont.iacf.boncom.data.Address;
 import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
-import com.sun.org.apache.xpath.internal.operations.Or;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  * Date: 01-07-17
@@ -69,6 +63,11 @@ public class OrderFormTable extends BaseTable<OrderForm> {
     }
 
     @Override
+    String deleteQuery() {
+        return "DELETE FROM " + OrderFormTable.NAME + " WHERE " + OrderFormTable.FIELD_ID + "=?";
+    }
+
+    @Override
     String selectAllQuery() {
         String providerSelect = "SELECT " +
                     EntityTable.FIELD_ID + " AS provider_id, " +
@@ -94,11 +93,6 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 " INNER JOIN (" + providerSelect + ") as provider ON " + NAME + "." + FIELD_PROVIDER + "=provider.provider_id"  +
                 " INNER JOIN (" + purchaserSelect + ") as purchaser ON " + NAME + "." + FIELD_PURCHASER  + "=purchaser.purchaser_id";
      }
-
-    @Override
-    PreparedStatement selectAllStatement(Connection conn) throws SQLException {
-        return conn.prepareStatement(selectAllQuery());
-    }
 
     private Entity getEntityWithOffset(ResultSet set, int offset) throws SQLException{
         Address address = new Address(

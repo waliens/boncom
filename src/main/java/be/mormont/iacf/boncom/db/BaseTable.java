@@ -11,8 +11,35 @@ import java.sql.SQLException;
 abstract class BaseTable<T> {
     abstract String insertQuery();
     abstract PreparedStatement insertStatement(Connection conn, T object) throws SQLException;
+
+    /**
+     * @return A query selecting one item based on its ids
+     */
     abstract String selectQuery();
-    abstract PreparedStatement selectStatement(Connection conn, long id) throws SQLException;
+
+    PreparedStatement selectStatement(Connection conn, long id) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(selectQuery());
+        statement.setLong(1, id);
+        return statement;
+    }
+
+    /**
+     * @return query deleting one item based on its ids
+     */
+    abstract String deleteQuery();
+
+    PreparedStatement deleteStatement(Connection conn, long id) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(deleteQuery());
+        statement.setLong(1, id);
+        return statement;
+    }
+
+    /**
+     * @return query selecting all entries of the table
+     */
     abstract String selectAllQuery();
-    abstract PreparedStatement selectAllStatement(Connection conn) throws SQLException;
+
+    PreparedStatement selectAllStatement(Connection conn) throws SQLException {
+        return conn.prepareStatement(selectAllQuery());
+    }
 }

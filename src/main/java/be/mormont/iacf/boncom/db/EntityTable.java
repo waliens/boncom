@@ -73,20 +73,13 @@ public class EntityTable extends BaseTable<Entity> {
     }
 
     @Override
-    PreparedStatement selectStatement(Connection conn, long id) throws SQLException {
-        PreparedStatement statement = conn.prepareStatement(selectQuery());
-        statement.setLong(1, id);
-        return statement;
+    String deleteQuery() {
+        return "DELETE FROM " + NAME + " WHERE " + FIELD_ID + "=?";
     }
 
     @Override
     String selectAllQuery() {
         return "SELECT * FROM " + NAME;
-    }
-
-    @Override
-    PreparedStatement selectAllStatement(Connection conn) throws SQLException {
-        return conn.prepareStatement(selectAllQuery());
     }
 
     public void insertEntity(Entity entity, Callback<Entity> callback) {
@@ -163,6 +156,29 @@ public class EntityTable extends BaseTable<Entity> {
                     } catch (Exception e) {
                         callback.failure(e);
                     }
+                    return null;
+                }
+
+                @Override
+                public void failure(Exception e) { callback.failure(e); }
+            });
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
+    }
+
+    public void deleteEntity(long id, Callback<Entity> callback) {
+        try {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<Entity>() {
+                @Override
+                public PreparedStatement getStatement(Connection conn) throws SQLException {
+                    return deleteStatement(conn, id);
+                }
+
+                @Override
+                public Entity success(ResultSet resultSet, PreparedStatement statement) {
+                    // TODO return something else then null ??
+                    callback.success(null);
                     return null;
                 }
 
