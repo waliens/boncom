@@ -84,16 +84,15 @@ public class EntityTable extends BaseTable<Entity> {
 
     public void insertEntity(Entity entity, Callback<Entity> callback) {
         try {
-            Database.getDatabase().executeUpdatePreparedStatement(new Database.PreparedStatementBuilder<Entity>() {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementNoReturnBuilder<Entity>() {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return insertStatement(conn, entity);
                 }
 
                 @Override
-                public Entity success(ResultSet resultSet, PreparedStatement statement) {
+                public void success(PreparedStatement statement) {
                     callback.success(entity);
-                    return entity;
                 }
 
                 @Override
@@ -106,7 +105,7 @@ public class EntityTable extends BaseTable<Entity> {
 
     public void getEntity(long id, Callback<Entity> callback) {
         try {
-            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<Entity>() {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementWithReturnBuilder<Entity>() {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return selectStatement(conn, id);
@@ -138,7 +137,7 @@ public class EntityTable extends BaseTable<Entity> {
 
     public void getAllEntities(Callback<ArrayList<Entity>> callback) {
         try {
-            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<Entity>>() {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementWithReturnBuilder<ArrayList<Entity>>() {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return selectAllStatement(conn);
@@ -169,22 +168,21 @@ public class EntityTable extends BaseTable<Entity> {
 
     public void deleteEntity(long id, Callback<Entity> callback) {
         try {
-            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<Entity>() {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementNoReturnBuilder<Entity>() {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return deleteStatement(conn, id);
                 }
 
                 @Override
-                public Entity success(ResultSet resultSet, PreparedStatement statement) {
+                public void success(PreparedStatement statement) {
                     // TODO return something else then null ??
                     callback.success(null);
-                    return null;
                 }
 
                 @Override
                 public void failure(Exception e) { callback.failure(e); }
-            });
+            }, true);
         } catch (SQLException e) {
             callback.failure(e);
         }

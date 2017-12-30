@@ -92,16 +92,15 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
 
     void addOrderFormEntries(ArrayList<OrderFormEntry> entries, Callback<ArrayList<OrderFormEntry>> callback, boolean commit) {
         try {
-            Database.getDatabase().executeUpdatePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<OrderFormEntry>>() {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementNoReturnBuilder<ArrayList<OrderFormEntry>>() {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return addBatchStatement(conn, entries);
                 }
 
                 @Override
-                public ArrayList<OrderFormEntry> success(ResultSet resultSet, PreparedStatement statement) {
+                public void success(PreparedStatement statement) {
                     callback.success(entries);
-                    return entries;
                 }
 
                 @Override
@@ -128,7 +127,7 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
 
     public void getOrderFormEntries(OrderForm orderForm, Callback<ArrayList<OrderFormEntry>> callback) {
         try {
-            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementBuilder<ArrayList<OrderFormEntry>>() {
+            Database.getDatabase().executePreparedStatement(new Database.PreparedStatementWithReturnBuilder<ArrayList<OrderFormEntry>>() {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return selectStatement(conn, orderForm.getId());

@@ -145,7 +145,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         try {
             Database db = Database.getDatabase();
 
-            db.executeUpdatePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback, commit) {
+            db.executePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback, commit) {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return insertStatementWithAutoNumber(conn, orderForm);
@@ -165,7 +165,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         try {
             Database db = Database.getDatabase();
 
-            db.executeUpdatePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback, commit) {
+            db.executePreparedStatement(new AddFormPreparedStatementBuilder(orderForm, callback, commit) {
                 @Override
                 public PreparedStatement getStatement(Connection conn) throws SQLException {
                     return insertStatement(conn, orderForm);
@@ -198,7 +198,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         }
     }
 
-    private abstract class AddFormPreparedStatementBuilder implements Database.PreparedStatementBuilder<OrderForm> {
+    private abstract class AddFormPreparedStatementBuilder implements Database.PreparedStatementNoReturnBuilder<OrderForm> {
         private OrderForm orderForm;
         private Callback<OrderForm> callback;
         private boolean commit;
@@ -210,7 +210,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         }
 
         @Override
-        public OrderForm success(ResultSet resultSet, PreparedStatement statement) {
+        public void success(PreparedStatement statement) {
             try {
                 long formId = Database.getLastId(statement);
 
@@ -232,7 +232,6 @@ public class OrderFormTable extends BaseTable<OrderForm> {
             } catch (SQLException e) {
                 callback.failure(e);
             }
-            return orderForm;
         }
 
         @Override

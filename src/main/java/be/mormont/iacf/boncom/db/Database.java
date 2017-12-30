@@ -161,26 +161,7 @@ public class Database implements AutoCloseable {
         }
     }
 
-    public <T> T executeUpdatePreparedStatement(PreparedStatementBuilder<T> builder, boolean commit) throws SQLException {
-        try (PreparedStatement statement = builder.getStatement(connection)) {
-            try {
-                statement.executeUpdate();
-                if (commit) {
-                    connection.commit();
-                }
-                builder.success(null, statement);
-            } catch (Exception e) {
-                connection.rollback();
-                builder.failure(e);
-            }
-        } catch (Exception e) {
-            connection.rollback();
-            builder.failure(e);
-        }
-        return null;
-    }
-
-    public <T> T executePreparedStatement(PreparedStatementBuilder<T> builder) throws SQLException {
+    public <T> T executePreparedStatement(PreparedStatementWithReturnBuilder<T> builder) throws SQLException {
         try (PreparedStatement statement = builder.getStatement(connection)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 return builder.success(resultSet, statement);
@@ -188,6 +169,25 @@ public class Database implements AutoCloseable {
                 builder.failure(e);
             }
         } catch (Exception e) {
+            builder.failure(e);
+        }
+        return null;
+    }
+
+    public <T> T executePreparedStatement(PreparedStatementNoReturnBuilder<T> builder, boolean commit) throws SQLException {
+        try (PreparedStatement statement = builder.getStatement(connection)) {
+            try {
+                statement.executeUpdate();
+                if (commit) {
+                    connection.commit();
+                }
+                builder.success(statement);
+            } catch (Exception e) {
+                connection.rollback();
+                builder.failure(e);
+            }
+        } catch (Exception e) {
+            connection.rollback();
             builder.failure(e);
         }
         return null;
@@ -208,11 +208,18 @@ public class Database implements AutoCloseable {
     }
 
     /**
-     * Callback for building prepared statement
+     * Callbacks for building prepared statement
      */
     public interface PreparedStatementBuilder<T> {
         PreparedStatement getStatement(Connection conn) throws SQLException;
-        T success(ResultSet resultSet, PreparedStatement statement);
         default void failure(Exception e) {}
+    }
+
+    public interface PreparedStatementWithReturnBuilder<T> extends PreparedStatementBuilder<T> {
+        T success(ResultSet resultSet, PreparedStatement statement);
+    }
+
+    public interface PreparedStatementNoReturnBuilder<T> extends PreparedStatementBuilder<T> {
+        void success(PreparedStatement statement);
     }
 }
