@@ -39,6 +39,7 @@
             <columnConstraints>
                 <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints vgrow="SOMETIMES" />
@@ -46,7 +47,7 @@
                 <RowConstraints vgrow="SOMETIMES" />
             </rowConstraints>
             <Label fx:id="orderFormsLabel" styleClass="subTitle" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <ButtonBar GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <ButtonBar GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="2">
                 <buttons>
                     <Button fx:id="orderFormEditButton" mnemonicParsing="false" />
                     <Button fx:id="orderFormExportButton" mnemonicParsing="false" />
@@ -55,7 +56,12 @@
             </ButtonBar>
             <Label fx:id="providerFilterLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
             <ComboBox fx:id="providerFilterComboBox" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1"  />
-            <TableView fx:id="orderFormsTable" minHeight="100.0" prefHeight="400.0" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2" >
+            <ButtonBar GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <buttons>
+                    <Button fx:id="resetFilterButton" mnemonicParsing="false" />
+                </buttons>
+            </ButtonBar>
+            <TableView fx:id="orderFormsTable" minHeight="100.0" prefHeight="400.0" GridPane.columnIndex="0" GridPane.columnSpan="3" GridPane.rowIndex="2" >
                 <columns>
                     <TableColumn fx:id="orderFormNumberColumn" styleClass="centeredColumn" />
                     <TableColumn fx:id="orderFormDateColumn" styleClass="centeredColumn" />

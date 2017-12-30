@@ -12,15 +12,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.WindowEvent;
 import javafx.util.Pair;
 
 import java.io.File;
@@ -29,7 +26,6 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.ResourceBundle;
 
 /**
@@ -61,6 +57,7 @@ public class RootSceneController implements Initializable {
     @FXML private TableColumn<OrderForm, String> orderFormProviderColumn;
     @FXML private Label providerFilterLabel;
     @FXML private ComboBox<Entity> providerFilterComboBox;
+    @FXML private Button resetFilterButton;
 
     private ObservableList<Entity> providers;
     private ObservableList<OrderForm> orderForms;
@@ -88,6 +85,7 @@ public class RootSceneController implements Initializable {
         orderFormEditButton.setText("Mettre à jour");
         orderFormExportButton.setText("Exporter");
         orderFormRefreshButton.setText("Rafraîchir");
+        resetFilterButton.setText("Reset");
 
         // initialize button and add listener to enable them on selection
         setTableButtonsDisableProperty(false);
@@ -102,9 +100,7 @@ public class RootSceneController implements Initializable {
             nodeCtrl.getValue().setHandler(form -> refreshHistory());
         });
 
-        orderFormRefreshButton.setOnMouseClicked(event -> {
-            refreshHistory();
-        });
+        orderFormRefreshButton.setOnMouseClicked(event -> refreshHistory());
 
         orderFormExportButton.setOnMouseClicked(event -> {
             OrderForm selected = orderFormsTable.getSelectionModel().getSelectedItem();
@@ -164,6 +160,9 @@ public class RootSceneController implements Initializable {
                 filteredOrderForms.setPredicate(s -> s.getProvider().getId() == entity.getId());
             }
         });
+
+        resetFilterButton.setOnMouseClicked(event -> providerFilterComboBox.getSelectionModel().clearSelection());
+
         updateProviders();
     }
 
