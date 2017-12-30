@@ -4,6 +4,7 @@ import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
 import be.mormont.iacf.boncom.db.Callback;
 import be.mormont.iacf.boncom.db.OrderFormEntryTable;
+import be.mormont.iacf.boncom.ui.util.StringListCell;
 import be.mormont.iacf.boncom.util.StringUtil;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -192,8 +193,8 @@ public class SearchOrderFormEntryForm implements Initializable {
 
             // extract current filtering rules
             boolean hideDup = hideDuplicate.get(), caseSen = caseSensitive.get();
-            Predicate<String> referencePred = getPatternFromQuery(referenceFilter.get(), caseSen).asPredicate();
-            Predicate<String> designationPred = getPatternFromQuery(designationFilter.get(), caseSen).asPredicate();
+            Predicate<String> referencePred = StringUtil.getSearchPatternFromQuery(referenceFilter.get(), caseSen).asPredicate();
+            Predicate<String> designationPred = StringUtil.getSearchPatternFromQuery(designationFilter.get(), caseSen).asPredicate();
 
             // filter
             for (OrderFormEntry entry: in) {
@@ -216,42 +217,15 @@ public class SearchOrderFormEntryForm implements Initializable {
 
             return out;
         }
-
-        /**
-         * Build a pattern loosely matching the query.
-         * Loosely matching means that the characters in the query do not have to be adjacent in the
-         * filtered string to have a match. Case sensitivity is set or not according to the object configuration.
-         * @param query The query string
-         * @param caseSensitive True for the final regex to be case sensitive
-         * @return A compiled pattern
-         */
-        private Pattern getPatternFromQuery(String query, boolean caseSensitive) {
-            StringBuilder regex = new StringBuilder();
-            final String WILDCARD = ".*";
-            regex.append("^");
-            for (int i = 0; i < query.length(); ++i) {
-                regex.append(WILDCARD);
-                regex.append(query.charAt(i));
-            }
-            regex.append(WILDCARD);
-            regex.append("$");
-            return Pattern.compile(regex.toString(), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
-        }
     }
 
     /**
      * A listview cell displaying basing information
      */
-    public class OrderFormEntryCell extends ListCell<OrderFormEntry> {
+    public class OrderFormEntryCell extends StringListCell<OrderFormEntry> {
         @Override
-        protected void updateItem(OrderFormEntry item, boolean empty) {
-            super.updateItem(item, empty);
-            if (!empty && item != null) {
-                setText("[" + item.getReference() + "] " + item.getDesignation() + " (" + StringUtil.formatCurrency(item.getUnitPrice()) + ")");
-            } else {
-                setText("");
-                setGraphic(null);
-            }
+        protected String convertItem(OrderFormEntry item) {
+            return "[" + item.getReference() + "] " + item.getDesignation() + " (" + StringUtil.formatCurrency(item.getUnitPrice()) + ")";
         }
     }
 
