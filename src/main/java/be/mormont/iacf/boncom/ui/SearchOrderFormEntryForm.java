@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Date: 24-12-17
  * By  : Mormont Romain
+ * TODO use FilteredList
  */
 public class SearchOrderFormEntryForm implements Initializable {
     @FXML private Label formTitle;
