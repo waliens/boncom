@@ -155,7 +155,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
     private void createHeader(Sheet sheet, Map<Integer, Row> rows, OrderForm orderForm) {
         // order form number
         sheet.addMergedRegion(new CellRangeAddress(ROW_DATE, ROW_DATE, COL_QUANTITY, COL_QUANTITY + 1));
-        rows.get(ROW_DATE).createCell(COL_QUANTITY).setCellValue("CDE n°" + orderForm.getNumber());
+        rows.get(ROW_DATE).createCell(COL_QUANTITY).setCellValue("Bon de commande n°" + orderForm.getNumber());
         sheet.addMergedRegion(new CellRangeAddress(ROW_DATE, ROW_DATE, COL_UNIT_PRICE + 1, COL_UNIT_PRICE + 2));
         rows.get(ROW_DATE).createCell(COL_UNIT_PRICE + 1).setCellValue("Date: " + orderForm.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
     }
@@ -175,7 +175,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         rows.get(ROW_NAME).createCell(column).setCellValue(purchaser.getName());
         Address address = purchaser.getAddress();
         String addressStr = address.getStreet() + ", " + address.getNumber();
-        if (address.getPostCode() != null) {
+        if (address.getBox() != null) {
             addressStr += ", " + address.getBox();
         }
         rows.get(ROW_ADDRESS).createCell(column).setCellValue(addressStr);
@@ -208,7 +208,6 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         style.setBorderLeft(borderStyle);
         style.setBorderRight(borderStyle);
         style.setBorderTop(borderStyle);
-
     }
 
     private void styleSheet(Workbook workbook, Sheet sheet, Map<Integer, Row> rows, int nEntries) {
@@ -260,7 +259,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         for (int rowId = ROW_TABLE_FIRST_ENTRY; rowId < ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES; ++rowId) {
             Row row = sheet.getRow(rowId) == null ? sheet.createRow(rowId) : sheet.getRow(rowId);
             for (int col : COLS) {
-                Cell cell = rowId < ROW_TABLE_FIRST_ENTRY + nEntries ? row.getCell(col) : row.createCell(col);
+                Cell cell = row.getCell(col) != null ? row.getCell(col) : row.createCell(col);
                 if (col == COL_UNIT_PRICE || col == COL_TOTAL) {
                     cell.setCellStyle(moneyThinCellStyle);
                 } else {
