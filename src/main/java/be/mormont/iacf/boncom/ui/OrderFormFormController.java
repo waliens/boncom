@@ -103,7 +103,7 @@ public class OrderFormFormController implements Initializable {
         // buttons
         addEntryButton.setText("Créer");
         deleteEntryButton.setText("Supprimer");
-        searchEntryButton.setText("Ajouter");
+        searchEntryButton.setText("Historique");
         setTableButtonsDisableProperty(false);
         addEntryButton.setOnMouseClicked(event -> entries.add(getEmptyOrderFormEntry()));
         deleteEntryButton.setOnMouseClicked(event -> entries.remove(entriesTable.getSelectionModel().getSelectedIndex()));
