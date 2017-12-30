@@ -15,6 +15,17 @@ public class Address {
         this.city = city;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(street);
+        if (box != null && !box.isEmpty()) {
+            builder.append(", ").append(box);
+        }
+        builder.append(", ").append(postCode)
+                .append(", ").append(city);
+        return builder.toString();
+    }
 
     public String getStreet() {
         return street;
