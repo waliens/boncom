@@ -3,6 +3,7 @@ package be.mormont.iacf.boncom.ui;
 import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.db.Callback;
 import be.mormont.iacf.boncom.db.EntityTable;
+import be.mormont.iacf.boncom.db.OrderFormTable;
 import be.mormont.iacf.boncom.ui.util.StringListCell;
 import be.mormont.iacf.boncom.util.StringUtil;
 import javafx.collections.FXCollections;
@@ -64,10 +65,27 @@ public class ProviderPanelController implements Initializable {
 
         deleteButton.setOnMouseClicked(event -> {
             Entity selected = providersListView.getSelectionModel().getSelectedItem();
-            new EntityTable().deleteEntity(selected.getId(), new Callback<Entity>() {
+            if (selected == null) {
+                return;
+            }
+            new OrderFormTable().countOrderFormOfEntity(selected.getId(), new Callback<Long>() {
                 @Override
-                public void success(Entity object) {
-                    refreshProviders();
+                public void success(Long object) {
+                    if (object == 0) {
+                        new EntityTable().deleteEntity(selected.getId(), new Callback<Entity>() {
+                            @Override
+                            public void success(Entity object) {
+                                refreshProviders();
+                            }
+
+                            @Override
+                            public void failure(Exception e) {
+                                AlertHelper.popException(e);
+                            }
+                        });
+                    } else {
+                        AlertHelper.popError("Impossible de supprimer ce fournisseur. Il existe encore " + object + " bon(s) de commande qui y sont associé(s).");
+                    }
                 }
 
                 @Override

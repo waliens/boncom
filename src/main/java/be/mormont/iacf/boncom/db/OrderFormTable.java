@@ -300,4 +300,33 @@ public class OrderFormTable extends BaseTable<OrderForm> {
             callback.failure(e);
         }
     }
+
+    private String countOrderFormsQuery() {
+        return "SELECT COUNT(*) FROM " + NAME + " WHERE " + FIELD_PROVIDER + "=? OR " + FIELD_PURCHASER + "=?";
+    }
+
+    private PreparedStatement countOrderFormStatement(Connection conn, long entityId) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(countOrderFormsQuery());
+        statement.setLong(1, entityId);
+        statement.setLong(2, entityId);
+        return statement;
+    }
+
+    public void countOrderFormOfEntity(long entityId, Callback<Long> callback) {
+        try {
+            Connection conn = Database.getDatabase().getConnection();
+            try (PreparedStatement orderFormsStatement = countOrderFormStatement(conn, entityId);
+                ResultSet countSet = orderFormsStatement.executeQuery()) {
+                if (countSet.next()) {
+                    callback.success(countSet.getLong(1));
+                } else {
+                    callback.success(0L);
+                }
+            }
+        } catch (SQLException e) {
+            callback.failure(e);
+        }
+    }
+
+
 }

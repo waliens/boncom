@@ -54,4 +54,14 @@ public class AlertHelper {
                 true
         );
     }
+
+    static void popError(String cause) {
+        AlertHelper.popAlert(
+                Alert.AlertType.ERROR,
+                "Erreur",
+                "Une erreur s'est produite.",
+                cause,
+                true
+        );
+    }
 }
