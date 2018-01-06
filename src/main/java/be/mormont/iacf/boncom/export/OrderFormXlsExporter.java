@@ -281,7 +281,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         ArrayList<OrderFormEntry> entries = new ArrayList<>();
         entries.add(new OrderFormEntry("ref1", "desig1", 3, new BigDecimal(25.35)));
         entries.add(new OrderFormEntry("ref2", "desig2", 2, new BigDecimal(5.10)));
-        Entity entity = new Entity("NAME", new Address("street", "number", "box", "postcode", "city"), new String[] {"04/225"});
+        Entity entity = new Entity("NAME", new Address("street", "number", "box", "postcode", "city"), new String[] {"04/225"}, "25");
         new OrderFormXlsExporter().export("a.xls", new OrderForm(25, entity, entity, LocalDate.now(), entries));
     }
 

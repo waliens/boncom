@@ -39,6 +39,8 @@ public class ProviderFormController implements Initializable {
     @FXML private Button submitButton;
     @FXML private Label phonesFieldLabel;
     @FXML private TextField phonesField;
+    @FXML private Label customerNbFieldLabel;
+    @FXML private TextField customerNbField;
 
     private Entity entity = null;
 
@@ -60,6 +62,7 @@ public class ProviderFormController implements Initializable {
         cityFieldLabel.setText("Ville");
         postCodeFieldLabel.setText("Code postal");
         phonesFieldLabel.setText("Téléphone(s)");
+        customerNbFieldLabel.setText("Numéro client");
         cancelButton.setText("Annuler");
         cancelButton.setOnMouseClicked(event -> closeForm());
 
@@ -146,6 +149,7 @@ public class ProviderFormController implements Initializable {
             cityField.setText(entity.getAddress().getCity());
             postCodeField.setText(entity.getAddress().getPostCode());
             phonesField.setText(entity.getPhonesAsString());
+            customerNbField.setText(entity.getCustomerNb());
         }
     }
 
@@ -169,6 +173,7 @@ public class ProviderFormController implements Initializable {
         String postCode = postCodeField.getText().trim();
         String city = cityField.getText().trim();
         String name = nameField.getText().trim();
+        String customerNb = customerNbField.getText().trim();
 
         checker.put("rue", street);
         checker.put("numéro", number);
@@ -187,6 +192,6 @@ public class ProviderFormController implements Initializable {
 
         String[] phones = getPhones();
         Address address = new Address(street, number, box, postCode, city);
-        return new Entity(name, address, phones.length == 0 ? null : phones);
+        return new Entity(name, address, phones.length == 0 ? null : phones, customerNb);
     }
 }

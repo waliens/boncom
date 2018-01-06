@@ -119,6 +119,7 @@ public class Database implements AutoCloseable {
                     EntityTable.FIELD_BOX + " VARCHAR (255)," +
                     EntityTable.FIELD_POST_CODE + " VARCHAR(255)," +
                     EntityTable.FIELD_CITY + " VARCHAR(255)," +
+                    EntityTable.FIELD_CUSTOMER_NB + " VARCHAR(255)," +
                     "PRIMARY KEY(" + EntityTable.FIELD_ID + "))"
             );
 
@@ -151,7 +152,7 @@ public class Database implements AutoCloseable {
             // insert default data
             Address iacfAddress = new Address("Rue des Bruyères", "150", null, "4000", "Liège");
             String[] iacfPhones = new String[]{"04/252.92.86", "04/254.23.67"};
-            Entity iacf = new Entity("IACF Cointe", iacfAddress, iacfPhones);
+            Entity iacf = new Entity("IACF Cointe", iacfAddress, iacfPhones, "");
 
             try(PreparedStatement prepStatement = new EntityTable().insertStatement(connection, iacf)) {
                 prepStatement.executeUpdate();

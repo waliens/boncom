@@ -9,16 +9,18 @@ public class Entity implements Comparable<Entity> {
     private String name;
     private Address address;
     private String[] phoneNumbers;
+    private String customerNb;
 
-    public Entity(String name, Address address, String[] phoneNumbers) {
-        this(-1, name, address, phoneNumbers);
+    public Entity(String name, Address address, String[] phoneNumbers, String customerNb) {
+        this(-1, name, address, phoneNumbers, customerNb);
     }
 
-    public Entity(long id, String name, Address address, String[] phoneNumbers) {
+    public Entity(long id, String name, Address address, String[] phoneNumbers, String customerNb) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.phoneNumbers = phoneNumbers;
+        this.customerNb = customerNb;
     }
 
     public long getId() {
@@ -55,6 +57,14 @@ public class Entity implements Comparable<Entity> {
 
     public String getPhonesAsString() {
         return phoneNumbers == null ? null : String.join(",", phoneNumbers);
+    }
+
+    public String getCustomerNb() {
+        return customerNb;
+    }
+
+    public void setCustomerNb(String customerNb) {
+        this.customerNb = customerNb;
     }
 
     @Override

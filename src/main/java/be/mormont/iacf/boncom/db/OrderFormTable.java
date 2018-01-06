@@ -106,7 +106,8 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 set.getLong(offset + 1),
                 set.getString(offset + 2),
                 address,
-                set.getString(offset + 8).split(",")
+                set.getString(offset + 8).split(","),
+                set.getString(offset + 9)
         );
     }
 

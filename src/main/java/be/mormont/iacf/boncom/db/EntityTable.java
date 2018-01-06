@@ -23,6 +23,7 @@ public class EntityTable extends BaseTable<Entity> {
     static String FIELD_BOX = "box";
     static String FIELD_POST_CODE = "post_code";
     static String FIELD_CITY = "city";
+    static String FIELD_CUSTOMER_NB = "customer_nb";
 
     static String NAME = "entity";
 
@@ -34,14 +35,15 @@ public class EntityTable extends BaseTable<Entity> {
                 resultSet.getString(5), // Number
                 resultSet.getString(6), // Box
                 resultSet.getString(7), // PostCode
-                resultSet.getString(8)  // City
+                resultSet.getString(8) // City
         );
 
         return new Entity(
                 resultSet.getLong(1),
                 resultSet.getString(2),
                 entityAddress,
-                resultSet.getString(3).split(",")
+                resultSet.getString(3).split(","),
+                resultSet.getString(9)  // Customer number
         );
     }
 
@@ -50,8 +52,8 @@ public class EntityTable extends BaseTable<Entity> {
         return "INSERT INTO " + NAME + "(" +
                  FIELD_ENTITY_NAME + ", " + FIELD_PHONE_NUMBERS + ", " + FIELD_STREET + ", " +
                  FIELD_HOUSE_NUMBER + ", " + FIELD_BOX + ", " + FIELD_POST_CODE + ", " +
-                 FIELD_CITY  +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?)";
+                 FIELD_CITY + ", " + FIELD_CUSTOMER_NB +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     }
 
     @Override
@@ -64,6 +66,7 @@ public class EntityTable extends BaseTable<Entity> {
         statement.setString(5, object.getAddress().getBox());
         statement.setString(6, object.getAddress().getPostCode());
         statement.setString(7, object.getAddress().getCity());
+        statement.setString(8, object.getCustomerNb());
         return statement;
     }
 
@@ -227,7 +230,8 @@ public class EntityTable extends BaseTable<Entity> {
                  + FIELD_HOUSE_NUMBER + "=?, "
                  + FIELD_BOX + "=?, "
                  + FIELD_POST_CODE + "=?, "
-                 + FIELD_CITY + "=? " +
+                 + FIELD_CITY + "=?, "
+                 + FIELD_CUSTOMER_NB + "=? " +
                 " WHERE " + EntityTable.FIELD_ID + "=?";
     }
 
@@ -240,7 +244,8 @@ public class EntityTable extends BaseTable<Entity> {
         statement.setString(5, entity.getAddress().getBox());
         statement.setString(6, entity.getAddress().getPostCode());
         statement.setString(7, entity.getAddress().getCity());
-        statement.setLong(8, entity.getId());
+        statement.setString(8, entity.getCustomerNb());
+        statement.setLong(9, entity.getId());
         return statement;
     }
 }
