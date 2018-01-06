@@ -1,11 +1,14 @@
 package be.mormont.iacf.boncom.ui.util;
 
 import be.mormont.iacf.boncom.ui.util.ObservableOrderFormEntry;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
+
+import java.util.List;
 
 /** Editing cell
  * - commit on focus loss
@@ -83,13 +86,20 @@ public abstract class EditingCell<D, T> extends TableCell<D, T> {
             KeyCodeCombination backTab = new KeyCodeCombination(KeyCode.TAB, KeyCodeCombination.SHIFT_DOWN);
             KeyCode code = event.getCode();
 
+            // if next column is not editable don't move
+            List<TableColumn<D, ?>> columns = table.getColumns();
             boolean goUp = code == KeyCode.UP && currRow != 0,
                     goDown = code == KeyCode.DOWN && currRow != (nbRows - 1),
-                    goLeft = backTab.match(event) && currCol % nbColumns != 0,
-                    goRight = !backTab.match(event) && code == KeyCode.TAB && currCol % nbColumns != (nbColumns - 1);
-
+                    goLeft = backTab.match(event) && currCol % nbColumns != 0 && columns.get(currCol - 1).isEditable(),
+                    goRight = !backTab.match(event)
+                                && code == KeyCode.TAB
+                                && currCol % nbColumns != (nbColumns - 1)
+                                && columns.get(currCol + 1).isEditable();
 
             if (!goLeft && !goRight && !goUp && !goDown) {
+                if (code == KeyCode.UP || code == KeyCode.DOWN || backTab.match(event) || code == KeyCode.TAB) {
+                    event.consume();
+                }
                 return;
             }
 
