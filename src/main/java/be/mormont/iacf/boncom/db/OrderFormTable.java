@@ -5,6 +5,7 @@ import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.data.OrderForm;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -139,7 +140,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 }
                 callback.success(orderForms);
             }
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
@@ -155,7 +156,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 }
             }, false);
 
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
@@ -175,7 +176,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 }
             }, false);
 
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
@@ -266,7 +267,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         Connection conn;
         try {
             conn = Database.getDatabase().getConnection();
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
             return;
         }
@@ -298,7 +299,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
             }
             conn.commit();
             callback.success(form);
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             try { conn.rollback(); } catch (SQLException ignored) { }
             callback.failure(e);
         }
@@ -326,7 +327,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                     callback.success(0L);
                 }
             }
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }

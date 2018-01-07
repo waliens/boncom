@@ -3,6 +3,7 @@ package be.mormont.iacf.boncom.db;
 import be.mormont.iacf.boncom.data.Address;
 import be.mormont.iacf.boncom.data.Entity;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -101,7 +102,7 @@ public class EntityTable extends BaseTable<Entity> {
                 @Override
                 public void failure(Exception e) { callback.failure(e); }
             }, true);
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
@@ -134,7 +135,7 @@ public class EntityTable extends BaseTable<Entity> {
                 @Override
                 public void failure(Exception e) { callback.failure(e); }
             });
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
@@ -165,7 +166,7 @@ public class EntityTable extends BaseTable<Entity> {
                 @Override
                 public void failure(Exception e) { callback.failure(e); }
             });
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
@@ -187,7 +188,7 @@ public class EntityTable extends BaseTable<Entity> {
                 @Override
                 public void failure(Exception e) { callback.failure(e); }
             }, true);
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
@@ -216,7 +217,7 @@ public class EntityTable extends BaseTable<Entity> {
                 @Override
                 public void failure(Exception e) { callback.failure(e); }
             }, true);
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }

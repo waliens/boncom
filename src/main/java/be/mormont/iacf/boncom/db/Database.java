@@ -4,6 +4,9 @@ import be.mormont.iacf.boncom.Lg;
 import be.mormont.iacf.boncom.data.Address;
 import be.mormont.iacf.boncom.data.Entity;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,20 +18,42 @@ import java.util.Arrays;
  */
 public class Database implements AutoCloseable {
     // JDBC driver name and database URL
-    private static final String DB_URL = "jdbc:sqlite:database.db";
+    private static final String DB_URL = "jdbc:sqlite:";
+    private static final String APP_FOLDER = ".boncom";
+    private static final String DB_FILE = "database.db";
 
     private static Database database = null;
     private Connection connection ;
 
-    private Database() throws SQLException {
-        connection = DriverManager.getConnection(DB_URL);
+    /**
+     * from https://stackoverflow.com/questions/11113974/what-is-the-cross-platform-way-of-obtaining-the-path-to-the-local-application-da
+     * @return the AppData folder path
+     */
+    private static String getAppDataFolder() {
+        String workingDirectory;
+        String OS = (System.getProperty("os.name")).toUpperCase();
+        if (OS.contains("WIN")) {
+            workingDirectory = System.getenv("AppData");
+        } else {
+            workingDirectory = System.getProperty("user.home");
+        }
+        return workingDirectory;
+    }
+
+    private Database() throws SQLException, IOException {
+        File dir = new File(Paths.get(getAppDataFolder(), APP_FOLDER).toString());
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new IOException("Cannot create database folder '" + dir.getAbsoluteFile() + "'!");
+        }
+        String url = DB_URL + Paths.get(dir.getAbsolutePath(), DB_FILE);
+        connection = DriverManager.getConnection(url);
     }
 
     /**
      * Get singleton database object
      * @return database
      */
-    public synchronized static Database getDatabase() throws SQLException {
+    public synchronized static Database getDatabase() throws SQLException, IOException {
         if (database == null) {
             database = new Database();
             database.connection.setAutoCommit(false);

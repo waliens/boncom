@@ -6,6 +6,7 @@ import be.mormont.iacf.boncom.data.OrderFormEntry;
 import com.sun.org.apache.regexp.internal.RE;
 
 import javax.xml.crypto.Data;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -108,7 +109,7 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
                     callback.failure(e);
                 }
             }, commit);
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
@@ -153,7 +154,7 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
                     callback.failure(e);
                 }
             });
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
@@ -210,12 +211,12 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
                 }
                 callback.success(entries);
             }
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             callback.failure(e);
         }
     }
 
-    ArrayList<OrderFormEntry> getFormEntries(long orderFormid) throws SQLException {
+    ArrayList<OrderFormEntry> getFormEntries(long orderFormid) throws SQLException, IOException {
         Connection conn = Database.getDatabase().getConnection();
         try (PreparedStatement statement = selectFormEntriesStatement(conn, orderFormid); ResultSet set = statement.executeQuery()) {
             ArrayList<OrderFormEntry> entries = new ArrayList<>();
@@ -251,7 +252,7 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
         return statement;
     }
 
-    void updateEntry(OrderFormEntry entry) throws SQLException {
+    void updateEntry(OrderFormEntry entry) throws SQLException, IOException {
         Connection conn = Database.getDatabase().getConnection();
         try (PreparedStatement stmt = updateEntryStatement(conn, entry)) {
             stmt.executeUpdate();
