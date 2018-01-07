@@ -10,7 +10,6 @@ import be.mormont.iacf.boncom.db.UICallback;
 import be.mormont.iacf.boncom.ui.util.EditingCell;
 import be.mormont.iacf.boncom.ui.util.ObservableOrderFormEntry;
 import be.mormont.iacf.boncom.util.StringUtil;
-import com.sun.xml.internal.bind.annotation.OverrideAnnotationOf;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
