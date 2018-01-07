@@ -203,6 +203,7 @@ public class RootSceneController implements Initializable {
             if (item != null && !empty) {
                 setText(StringUtil.formatCurrency(item));
             } else {
+                setText("");
                 setGraphic(null);
             }
         }
