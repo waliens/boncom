@@ -27,8 +27,8 @@ import org.apache.poi.util.Units;
 public class OrderFormXlsExporter implements Exporter<OrderForm> {
     private static int MAX_ENTRIES;
     private static int ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1,
-            ROW_PHONE2, ROW_TARIF, ROW_TABLE_HEADERS, ROW_TABLE_FIRST_ENTRY,
-            ROW_TOTAL, ROW_SIGN;
+            ROW_PHONE2, ROW_CUSTOMER_NB, ROW_TARIF, ROW_TABLE_HEADERS,
+            ROW_TABLE_FIRST_ENTRY, ROW_TOTAL, ROW_SIGN;
 
     private static int COL_REF = 0, COL_DESIGNATION = 1, COL_QUANTITY = 2, COL_UNIT_PRICE = 3, COL_TOTAL = 5;
     private static int[] ROWS, COLS;
@@ -42,13 +42,14 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         ROW_CITY = ROW_ADDRESS + 1;
         ROW_PHONE1 = ROW_CITY + 1;
         ROW_PHONE2 = ROW_PHONE1 + 1;
+        ROW_CUSTOMER_NB = ROW_PHONE2 + 1;
         ROW_TARIF = 9;
         ROW_TABLE_HEADERS = 11;
         ROW_TABLE_FIRST_ENTRY = ROW_TABLE_HEADERS + 1;
         ROW_TOTAL = ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES + 1;
         ROW_SIGN = ROW_TOTAL + 2;
         ROWS = new int[] {
-            ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1, ROW_PHONE2,
+            ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1, ROW_PHONE2, ROW_CUSTOMER_NB,
             ROW_TARIF, ROW_TABLE_HEADERS, ROW_TABLE_FIRST_ENTRY, ROW_TOTAL, ROW_SIGN
         };
         COL_REF = 0;
@@ -102,8 +103,9 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         sheet.addMergedRegion(new CellRangeAddress(ROW_CITY, ROW_CITY, COL_QUANTITY, COL_TOTAL));
         sheet.addMergedRegion(new CellRangeAddress(ROW_PHONE1, ROW_PHONE1, COL_QUANTITY, COL_TOTAL));
         sheet.addMergedRegion(new CellRangeAddress(ROW_PHONE2, ROW_PHONE2, COL_QUANTITY, COL_TOTAL));
-        writeEntity(rows, object.getPurchaser(), COL_DESIGNATION);
-        writeEntity(rows, object.getProvider(), COL_QUANTITY);
+        sheet.addMergedRegion(new CellRangeAddress(ROW_CUSTOMER_NB, ROW_CUSTOMER_NB, COL_QUANTITY, COL_TOTAL));
+        writeEntity(rows, object.getPurchaser(), object.getProvider().getCustomerNb(), COL_DESIGNATION);
+        writeEntity(rows, object.getProvider(), "", COL_QUANTITY);
 
         sheet.addMergedRegion(new CellRangeAddress(ROW_TABLE_HEADERS, ROW_TABLE_HEADERS, COL_UNIT_PRICE, COL_UNIT_PRICE + 1));
 
@@ -171,7 +173,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         return new HSSFWorkbook();
     }
 
-    private void writeEntity(Map<Integer, Row> rows, Entity purchaser, int column) {
+    private void writeEntity(Map<Integer, Row> rows, Entity purchaser, String customerNb, int column) {
         rows.get(ROW_NAME).createCell(column).setCellValue(purchaser.getName());
         Address address = purchaser.getAddress();
         String addressStr = address.getStreet() + ", " + address.getNumber();
@@ -181,11 +183,15 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         rows.get(ROW_ADDRESS).createCell(column).setCellValue(addressStr);
         rows.get(ROW_CITY).createCell(column).setCellValue(address.getCity() + " " + address.getPostCode());
         String[] phones = purchaser.getPhoneNumbers();
-        if (phones.length >= 1) {
-            rows.get(ROW_PHONE1).createCell(column).setCellValue(phones[0]);
+        int curr = ROW_PHONE1;
+        if (phones.length >= 1 && phones[0].trim().length() > 0) {
+            rows.get(curr++).createCell(column).setCellValue(phones[0]);
         }
-        if (phones.length >= 2) {
-            rows.get(ROW_PHONE2).createCell(column).setCellValue(phones[1]);
+        if (phones.length >= 2 && phones[1].trim().length() > 0) {
+            rows.get(curr++).createCell(column).setCellValue(phones[1]);
+        }
+        if (!customerNb.isEmpty()) {
+            rows.get(curr).createCell(column).setCellValue("client " + customerNb);
         }
     }
 
