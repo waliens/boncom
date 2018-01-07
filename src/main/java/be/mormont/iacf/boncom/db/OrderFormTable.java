@@ -77,7 +77,8 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                     EntityTable.FIELD_BOX + " AS provider_box, " +
                     EntityTable.FIELD_CITY + " AS provider_city, " +
                     EntityTable.FIELD_POST_CODE + " AS provider_post_code, " +
-                    EntityTable.FIELD_PHONE_NUMBERS + " AS provider_phone " +
+                    EntityTable.FIELD_PHONE_NUMBERS + " AS provider_phone, " +
+                    EntityTable.FIELD_CUSTOMER_NB + " AS purchaser_customer_nb " +
                 " FROM " + EntityTable.NAME;
         String purchaserSelect = "SELECT " +
                 EntityTable.FIELD_ID + " AS purchaser_id, " +
@@ -87,7 +88,8 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 EntityTable.FIELD_BOX + " AS purchaser_box, " +
                 EntityTable.FIELD_CITY + " AS purchaser_city, " +
                 EntityTable.FIELD_POST_CODE + " AS purchaser_post_code, " +
-                EntityTable.FIELD_PHONE_NUMBERS + " AS purchaser_phone " +
+                EntityTable.FIELD_PHONE_NUMBERS + " AS purchaser_phone, " +
+                EntityTable.FIELD_CUSTOMER_NB + " AS purchaser_customer_nb " +
                 " FROM " + EntityTable.NAME;
         return "SELECT * FROM " + NAME +
                 " INNER JOIN (" + providerSelect + ") as provider ON " + NAME + "." + FIELD_PROVIDER + "=provider.provider_id"  +
@@ -112,7 +114,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
     }
 
     private OrderForm makeShallowOrderForm(ResultSet set) throws SQLException {
-        final int OFFSET_PROVIDER = 5, OFFSET_PURCHASER = OFFSET_PROVIDER + 8;
+        final int OFFSET_PROVIDER = 5, OFFSET_PURCHASER = OFFSET_PROVIDER + 9;
         Date date = set.getDate(4);
         return new OrderForm(
                 set.getLong(1),
