@@ -14,13 +14,13 @@ import java.util.ArrayList;
  * By  : Mormont Romain
  */
 public class OrderFormTable extends BaseTable<OrderForm> {
-    static String FIELD_ID = "id";
-    static String FIELD_PROVIDER = "provider";
-    static String FIELD_PURCHASER = "purchaser";
-    static String FIELD_ISSUE_DATE = "issue_date";
-    static String FIELD_NUMBER = "number";
+    static final public String FIELD_ID = "id";
+    static final public String FIELD_PROVIDER = "provider";
+    static final public String FIELD_PURCHASER = "purchaser";
+    static final public String FIELD_ISSUE_DATE = "issue_date";
+    static final public String FIELD_NUMBER = "number";
 
-    static final String NAME = "order_form"; // table name
+    static final public String NAME = "order_form"; // table name
 
     @Override
     String insertQuery() {
@@ -71,46 +71,46 @@ public class OrderFormTable extends BaseTable<OrderForm> {
     @Override
     String selectAllQuery() {
         String providerSelect = "SELECT " +
-                    EntityTable.FIELD_ID + " AS provider_id, " +
-                    EntityTable.FIELD_ENTITY_NAME + " AS provider_name, " +
-                    EntityTable.FIELD_STREET + " AS provider_street, " +
-                    EntityTable.FIELD_HOUSE_NUMBER + " AS provider_number, " +
-                    EntityTable.FIELD_BOX + " AS provider_box, " +
-                    EntityTable.FIELD_CITY + " AS provider_city, " +
-                    EntityTable.FIELD_POST_CODE + " AS provider_post_code, " +
-                    EntityTable.FIELD_PHONE_NUMBERS + " AS provider_phone, " +
-                    EntityTable.FIELD_CUSTOMER_NB + " AS purchaser_customer_nb " +
+                    EntityTable.FIELD_ID + " AS provider_" + EntityTable.FIELD_ID + " , " +
+                    EntityTable.FIELD_ENTITY_NAME + " AS provider_" + EntityTable.FIELD_ENTITY_NAME + " , " +
+                    EntityTable.FIELD_STREET + " AS provider_" + EntityTable.FIELD_STREET + " , " +
+                    EntityTable.FIELD_HOUSE_NUMBER + " AS provider_" + EntityTable.FIELD_HOUSE_NUMBER + " , " +
+                    EntityTable.FIELD_BOX + " AS provider_" + EntityTable.FIELD_BOX + " , " +
+                    EntityTable.FIELD_CITY + " AS provider_" + EntityTable.FIELD_CITY + " , " +
+                    EntityTable.FIELD_POST_CODE + " AS provider_" + EntityTable.FIELD_POST_CODE + " , " +
+                    EntityTable.FIELD_PHONE_NUMBERS + " AS provider_" + EntityTable.FIELD_PHONE_NUMBERS + " , " +
+                    EntityTable.FIELD_CUSTOMER_NB + " AS provider_" + EntityTable.FIELD_CUSTOMER_NB + " " +
                 " FROM " + EntityTable.NAME;
         String purchaserSelect = "SELECT " +
-                EntityTable.FIELD_ID + " AS purchaser_id, " +
-                EntityTable.FIELD_ENTITY_NAME + " AS purchaser_name, " +
-                EntityTable.FIELD_STREET + " AS purchaser_street, " +
-                EntityTable.FIELD_HOUSE_NUMBER + " AS purchaser_number, " +
-                EntityTable.FIELD_BOX + " AS purchaser_box, " +
-                EntityTable.FIELD_CITY + " AS purchaser_city, " +
-                EntityTable.FIELD_POST_CODE + " AS purchaser_post_code, " +
-                EntityTable.FIELD_PHONE_NUMBERS + " AS purchaser_phone, " +
-                EntityTable.FIELD_CUSTOMER_NB + " AS purchaser_customer_nb " +
+                EntityTable.FIELD_ID + " AS purchaser_" + EntityTable.FIELD_ID + ", " +
+                EntityTable.FIELD_ENTITY_NAME + " AS purchaser_" + EntityTable.FIELD_ENTITY_NAME + ", " +
+                EntityTable.FIELD_STREET + " AS purchaser_" + EntityTable.FIELD_STREET + ", " +
+                EntityTable.FIELD_HOUSE_NUMBER + " AS purchaser_" + EntityTable.FIELD_HOUSE_NUMBER + ", " +
+                EntityTable.FIELD_BOX + " AS purchaser_" + EntityTable.FIELD_BOX + ", " +
+                EntityTable.FIELD_CITY + " AS purchaser_" + EntityTable.FIELD_CITY + ", " +
+                EntityTable.FIELD_POST_CODE + " AS purchaser_" + EntityTable.FIELD_POST_CODE + ", " +
+                EntityTable.FIELD_PHONE_NUMBERS + " AS purchaser_" + EntityTable.FIELD_PHONE_NUMBERS + ", " +
+                EntityTable.FIELD_CUSTOMER_NB + " AS purchaser_" + EntityTable.FIELD_CUSTOMER_NB + "" +
                 " FROM " + EntityTable.NAME;
         return "SELECT * FROM " + NAME +
                 " INNER JOIN (" + providerSelect + ") as provider ON " + NAME + "." + FIELD_PROVIDER + "=provider.provider_id"  +
                 " INNER JOIN (" + purchaserSelect + ") as purchaser ON " + NAME + "." + FIELD_PURCHASER  + "=purchaser.purchaser_id";
      }
 
-    private Entity getEntityWithOffset(ResultSet set, int offset) throws SQLException{
+    private Entity getEntityWithOffset(ResultSet set, String fieldPrefix) throws SQLException{
         Address address = new Address(
-                set.getString(offset + 3),
-                set.getString(offset + 4),
-                set.getString(offset + 5),
-                set.getString(offset + 6),
-                set.getString(offset + 7)
+                set.getString(fieldPrefix + EntityTable.FIELD_STREET),
+                set.getString(fieldPrefix + EntityTable.FIELD_HOUSE_NUMBER),
+                set.getString(fieldPrefix + EntityTable.FIELD_BOX),
+                set.getString(fieldPrefix + EntityTable.FIELD_CITY),
+                set.getString(fieldPrefix + EntityTable.FIELD_POST_CODE)
         );
         return new Entity(
-                set.getLong(offset + 1),
-                set.getString(offset + 2),
+                set.getLong(fieldPrefix + EntityTable.FIELD_ID),
+                set.getString(fieldPrefix + EntityTable.FIELD_ENTITY_NAME),
                 address,
-                set.getString(offset + 8).split(","),
-                set.getString(offset + 9)
+                set.getString(fieldPrefix + EntityTable.FIELD_PHONE_NUMBERS).split(","),
+                set.getString(fieldPrefix + EntityTable.FIELD_CUSTOMER_NB)
         );
     }
 
@@ -120,8 +120,8 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         return new OrderForm(
                 set.getLong(1),
                 set.getLong(5),
-                getEntityWithOffset(set, OFFSET_PURCHASER),
-                getEntityWithOffset(set, OFFSET_PROVIDER),
+                getEntityWithOffset(set, "purchaser_"),
+                getEntityWithOffset(set, "provider_"),
                 date.toLocalDate(),
                 new ArrayList<>()
         );
