@@ -16,17 +16,17 @@ import java.util.NoSuchElementException;
  * By  : Mormont Romain
  */
 public class EntityTable extends BaseTable<Entity> {
-    static String FIELD_ID = "id";
-    static String FIELD_ENTITY_NAME = "entity_name";
-    static String FIELD_PHONE_NUMBERS = "phone_numbers";
-    static String FIELD_STREET = "street";
-    static String FIELD_HOUSE_NUMBER = "house_number";
-    static String FIELD_BOX = "box";
-    static String FIELD_POST_CODE = "post_code";
-    static String FIELD_CITY = "city";
-    static String FIELD_CUSTOMER_NB = "customer_nb";
+    static public String FIELD_ID = "id";
+    static public String FIELD_ENTITY_NAME = "entity_name";
+    static public String FIELD_PHONE_NUMBERS = "phone_numbers";
+    static public String FIELD_STREET = "street";
+    static public String FIELD_HOUSE_NUMBER = "house_number";
+    static public String FIELD_BOX = "box";
+    static public String FIELD_POST_CODE = "post_code";
+    static public String FIELD_CITY = "city";
+    static public String FIELD_CUSTOMER_NB = "customer_nb";
 
-    static String NAME = "entity";
+    static public String NAME = "entity";
 
     static long IACF_ENTITY_ID = 1;
 
@@ -58,7 +58,7 @@ public class EntityTable extends BaseTable<Entity> {
     }
 
     @Override
-    PreparedStatement insertStatement(Connection conn, Entity object) throws SQLException {
+    public PreparedStatement insertStatement(Connection conn, Entity object) throws SQLException {
         PreparedStatement statement = conn.prepareStatement(insertQuery());
         statement.setString(1, object.getName());
         statement.setString(2, object.getPhonesAsString());

@@ -20,14 +20,14 @@ import java.util.List;
  * By  : Mormont Romain
  */
 public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
-    static String FIELD_ID = "id";
-    static String FIELD_ORDER_FORM = "order_form";
-    static String FIELD_REFERENCE = "reference";
-    static String FIELD_DESIGNATION = "designation";
-    static String FIELD_QUANTITY = "quantity";
-    static String FIELD_UNIT_PRICE = "unit_price";
+    static final public String FIELD_ID = "id";
+    static final public String FIELD_ORDER_FORM = "order_form";
+    static final public String FIELD_REFERENCE = "reference";
+    static final public String FIELD_DESIGNATION = "designation";
+    static final public String FIELD_QUANTITY = "quantity";
+    static final public String FIELD_UNIT_PRICE = "unit_price";
 
-    static final String NAME = "order_form_entry";
+    static final public String NAME = "order_form_entry";
 
 
     @Override

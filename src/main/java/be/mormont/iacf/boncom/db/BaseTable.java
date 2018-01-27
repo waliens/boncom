@@ -8,7 +8,7 @@ import java.sql.SQLException;
  * Date: 01-07-17
  * By  : Mormont Romain
  */
-abstract class BaseTable<T> {
+public abstract class BaseTable<T> {
     abstract String insertQuery();
     abstract PreparedStatement insertStatement(Connection conn, T object) throws SQLException;
 

@@ -1,6 +1,7 @@
 package be.mormont.iacf.boncom;
 
 import be.mormont.iacf.boncom.db.Database;
+import be.mormont.iacf.boncom.db.migrations.MigrationHandler;
 import be.mormont.iacf.boncom.ui.FXMLBuilder;
 import be.mormont.iacf.boncom.ui.RootSceneController;
 import javafx.application.Application;
@@ -23,8 +24,9 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         try (Database database = Database.getDatabase()) {
-            Lg.getLogger(Main.class).info("Create database (if it does not exist)...");
-            database.createDatabaseIfNotExist();
+            Lg.getLogger(Main.class).info("Check migrations");
+            MigrationHandler handler = new MigrationHandler();
+            handler.checkAndUpdate();
             Lg.getLogger(Main.class).info("Launch UI...");
             launch(args);
         } catch (SQLException e) {
