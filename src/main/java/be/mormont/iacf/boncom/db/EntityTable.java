@@ -32,19 +32,19 @@ public class EntityTable extends BaseTable<Entity> {
 
     private static Entity makeEntity(ResultSet resultSet) throws SQLException {
         Address entityAddress = new Address(
-                resultSet.getString(4), // Street
-                resultSet.getString(5), // Number
-                resultSet.getString(6), // Box
-                resultSet.getString(7), // PostCode
-                resultSet.getString(8) // City
+                resultSet.getString(FIELD_STREET), // Street
+                resultSet.getString(FIELD_HOUSE_NUMBER), // Number
+                resultSet.getString(FIELD_BOX), // Box
+                resultSet.getString(FIELD_POST_CODE), // PostCode
+                resultSet.getString(FIELD_CITY) // City
         );
 
         return new Entity(
-                resultSet.getLong(1),
-                resultSet.getString(2),
+                resultSet.getLong(FIELD_ID),
+                resultSet.getString(FIELD_ENTITY_NAME),
                 entityAddress,
-                resultSet.getString(3).split(","),
-                resultSet.getString(9)  // Customer number
+                resultSet.getString(FIELD_PHONE_NUMBERS).split(","),
+                resultSet.getString(FIELD_CUSTOMER_NB)  // Customer number
         );
     }
 

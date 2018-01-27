@@ -117,12 +117,12 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
     private OrderFormEntry makeEntry(ResultSet set) throws SQLException {
         //long id, long orderFormId, String reference, String designation, int quantity, BigDecimal unitPrice
         return new OrderFormEntry(
-            set.getLong(1),
-            set.getLong(2),
-            set.getString(3),
-            set.getString(4),
-            set.getInt(5),
-            set.getBigDecimal(6)
+            set.getLong(FIELD_ID),
+            set.getLong(FIELD_ORDER_FORM),
+            set.getString(FIELD_REFERENCE),
+            set.getString(FIELD_DESIGNATION),
+            set.getInt(FIELD_QUANTITY),
+            set.getBigDecimal(FIELD_UNIT_PRICE)
         );
     }
 
