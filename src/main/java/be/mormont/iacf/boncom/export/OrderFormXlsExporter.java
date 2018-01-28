@@ -228,8 +228,10 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         boldFont.setBold(true);
 
         // create some styles
-        CellStyle mediumBorderCellStyle = workbook.createCellStyle();
-        setBorders(mediumBorderCellStyle, BorderStyle.MEDIUM);
+        CellStyle mediumBorderCenteredCellStyle = workbook.createCellStyle();
+        mediumBorderCenteredCellStyle.setAlignment(HorizontalAlignment.CENTER);
+        mediumBorderCenteredCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        setBorders(mediumBorderCenteredCellStyle, BorderStyle.MEDIUM);
 
         CellStyle thinBorderCellStyle = workbook.createCellStyle();
         setBorders(thinBorderCellStyle, BorderStyle.THIN);
@@ -255,6 +257,22 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         CellStyle boldCellStyle = workbook.createCellStyle();
         boldCellStyle.setFont(boldFont);
 
+        CellStyle moneyThinCenteredCellStyle = workbook.createCellStyle();
+        moneyThinCenteredCellStyle.setDataFormat(euroFormatIdx);
+        moneyThinCenteredCellStyle.setAlignment(HorizontalAlignment.CENTER);
+        moneyThinCenteredCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        setBorders(moneyThinCenteredCellStyle, BorderStyle.THIN);
+
+        CellStyle intThinCenteredCellStyle = workbook.createCellStyle();
+        intThinCenteredCellStyle.setAlignment(HorizontalAlignment.CENTER);
+        intThinCenteredCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        setBorders(intThinCenteredCellStyle, BorderStyle.THIN);
+
+        CellStyle centeredThinCellStyle = workbook.createCellStyle();
+        centeredThinCellStyle.setAlignment(HorizontalAlignment.CENTER);
+        centeredThinCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        setBorders(centeredThinCellStyle, BorderStyle.THIN);
+
         // apply styles
         rows.get(ROW_DATE).getCell(COL_QUANTITY).setCellStyle(boldCellStyle);
         rows.get(ROW_DATE).getCell(COL_UNIT_PRICE + 1).setCellStyle(boldCellStyle);
@@ -274,8 +292,14 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
             Row row = sheet.getRow(rowId) == null ? sheet.createRow(rowId) : sheet.getRow(rowId);
             for (int col : COLS) {
                 Cell cell = row.getCell(col) != null ? row.getCell(col) : row.createCell(col);
-                if (col == COL_UNIT_PRICE || col == COL_TOTAL) {
+                if (col == COL_UNIT_PRICE) {
+                    cell.setCellStyle(moneyThinCenteredCellStyle);
+                } else if (col == COL_TOTAL) {
                     cell.setCellStyle(moneyThinCellStyle);
+                } else if (col == COL_QUANTITY) {
+                    cell.setCellStyle(intThinCenteredCellStyle);
+                } else if (col == COL_REF) {
+                    cell.setCellStyle(centeredThinCellStyle);
                 } else {
                     cell.setCellStyle(thinBorderCellStyle);
                 }
@@ -283,7 +307,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
             row.createCell(COL_UNIT_PRICE + 1).setCellStyle(thinBorderCellStyle);
         }
 
-        rows.get(ROW_TOTAL).getCell(COL_QUANTITY).setCellStyle(mediumBorderCellStyle);
+        rows.get(ROW_TOTAL).getCell(COL_QUANTITY).setCellStyle(mediumBorderCenteredCellStyle);
         rows.get(ROW_TOTAL).getCell(COL_TOTAL).setCellStyle(moneyMediumCellStyle);
     }
 
