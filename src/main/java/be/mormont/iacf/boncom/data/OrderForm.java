@@ -19,8 +19,9 @@ public class OrderForm implements Comparable<OrderForm> {
     private Entity provider;
     private LocalDate date;
     private ArrayList<OrderFormEntry> entries;
+    private LocalDate deliveryDate;
 
-    public OrderForm(long id, long number, Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries) {
+    public OrderForm(long id, long number, Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries, LocalDate deliveryDate) {
         this.number = number;
         this.purchaser = purchaser;
         this.provider = provider;
@@ -31,14 +32,25 @@ public class OrderForm implements Comparable<OrderForm> {
     }
 
     public OrderForm(long number, Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries) {
-        this(-1, number, purchaser, provider, date, entries);
+        this(-1, number, purchaser, provider, date, entries, null);
+    }
+
+    public OrderForm(long number, Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries, LocalDate deliveryDate) {
+        this(-1, number, purchaser, provider, date, entries, deliveryDate);
+    }
+
+    /**
+     * Constructor for order form with undefined number
+     */
+    public OrderForm(Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries, LocalDate deliveryDate) {
+        this(UNDEFINED_NUMBER, purchaser, provider, date, entries, deliveryDate);
     }
 
     /**
      * Constructor for order form with undefined number
      */
     public OrderForm(Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries) {
-        this(UNDEFINED_NUMBER, purchaser, provider, date, entries);
+        this(UNDEFINED_NUMBER, purchaser, provider, date, entries, null);
     }
 
     public Entity getPurchaser() {
@@ -78,6 +90,18 @@ public class OrderForm implements Comparable<OrderForm> {
 
     public void setNumber(long number) {
         this.number = number;
+    }
+
+    public LocalDate getDeliveryDate() {
+        return deliveryDate;
+    }
+
+    public boolean hasDeliveryDate() {
+        return deliveryDate != null;
+    }
+
+    public void setDeliveryDate(LocalDate deliveryDate) {
+        this.deliveryDate = deliveryDate;
     }
 
     /**
