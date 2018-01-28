@@ -12,6 +12,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
@@ -145,7 +146,9 @@ public class RootSceneController implements Initializable {
         // data
         orderForms = FXCollections.observableArrayList();
         filteredOrderForms = new FilteredList<>(orderForms);
-        orderFormsTable.setItems(filteredOrderForms);
+        SortedList sortedOrderForms = new SortedList<>(filteredOrderForms);
+        sortedOrderForms.comparatorProperty().bind(orderFormsTable.comparatorProperty());
+        orderFormsTable.setItems(sortedOrderForms);
         refreshHistory();
 
         // provider filtering
@@ -183,9 +186,9 @@ public class RootSceneController implements Initializable {
             public void success(ArrayList<OrderForm> object) {
                 orderForms.setAll(object);
                 orderFormsTable.getSortOrder().clear();
-                orderFormsTable.getSortOrder().add(orderFormDateColumn);
                 orderFormsTable.getSortOrder().add(orderFormNumberColumn);
-                orderFormNumberColumn.setSortType(TableColumn.SortType.ASCENDING);
+                orderFormsTable.getSortOrder().add(orderFormDateColumn);
+                orderFormNumberColumn.setSortType(TableColumn.SortType.DESCENDING);
                 orderFormDateColumn.setSortType(TableColumn.SortType.DESCENDING);
                 orderFormDateColumn.setSortable(true);
             }
