@@ -12,7 +12,7 @@ public class EntityListCell extends ListCell<Entity> {
     protected void updateItem(Entity item, boolean empty) {
         super.updateItem(item, empty);
         if (item != null) {
-            setText("[" + item.getId() + "] " + item.getName());
+            setText(item.getName());
         } else {
             setText("_");
         }

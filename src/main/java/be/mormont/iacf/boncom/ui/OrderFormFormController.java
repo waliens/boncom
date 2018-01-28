@@ -25,9 +25,7 @@ import javafx.util.Pair;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -200,6 +198,7 @@ public class OrderFormFormController implements Initializable {
         entityTable.getAllEntities(new be.mormont.iacf.boncom.db.Callback<ArrayList<Entity>>() {
             @Override
             public void success(ArrayList<Entity> object) {
+                object.sort(Comparator.comparing(Entity::getName));
                 providersList.addAll(object);
                 if (orderForm != null) {
                     providerField.getSelectionModel().select(orderForm.getProvider());
