@@ -29,6 +29,7 @@ public class OrderForm implements Comparable<OrderForm> {
         this.entries = new ArrayList<>();
         this.entries.addAll(entries);
         this.id = id;
+        this.deliveryDate = deliveryDate;
     }
 
     public OrderForm(long number, Entity purchaser, Entity provider, LocalDate date, List<OrderFormEntry> entries) {

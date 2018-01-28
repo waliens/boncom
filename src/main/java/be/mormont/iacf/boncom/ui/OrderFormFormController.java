@@ -49,6 +49,8 @@ public class OrderFormFormController implements Initializable {
     @FXML private ComboBox<Entity> providerField;
     @FXML private Label dateFieldLabel;
     @FXML private DatePicker dateField;
+    @FXML private Label deliveryDateFieldLabel;
+    @FXML private DatePicker deliveryDateField;
     @FXML private Label entriesTableLabel;
     @FXML private Button deleteEntryButton;
     @FXML private Button addEntryButton;
@@ -74,6 +76,7 @@ public class OrderFormFormController implements Initializable {
         purchaserFieldLabel.setText("Acheteur");
         providerFieldLabel.setText("Fournisseur");
         dateFieldLabel.setText("Date");
+        deliveryDateFieldLabel.setText("Livraison");
         entriesTableLabel.setText("Entrées");
         totalFieldLabel.setText("Total :");
         setTotal(new BigDecimal(0));
@@ -219,6 +222,7 @@ public class OrderFormFormController implements Initializable {
             formTitle.setText("Mise à jour d'un bon de commande (" + orderForm.getNumber() + ")");
             numberField.setText(Long.toString(orderForm.getNumber()));
             dateField.setValue(orderForm.getDate());
+            deliveryDateField.setValue(orderForm.getDeliveryDate());
             entries.addAll(convertEntries(orderForm.getEntries()));
             submitButton.setText("Mettre à jour");
             submitButton.setOnMouseClicked(e -> {
@@ -241,6 +245,7 @@ public class OrderFormFormController implements Initializable {
         } else {
             formTitle.setText("Créer un nouveau bon de commande");
             dateField.setValue(LocalDate.now());
+            deliveryDateField.setValue(null);
             submitButton.setText("Créer");
             submitButton.setOnMouseClicked(e -> {
                 OrderForm orderForm = getOrderForm();
@@ -296,7 +301,7 @@ public class OrderFormFormController implements Initializable {
             return null;
         }
 
-        LocalDate date = dateField.getValue();
+        LocalDate date = dateField.getValue(), deliveryDate = deliveryDateField.getValue();
         Entity provider = providerField.getValue(), purchaser = purchaserField.getValue();
         if (provider == null) {
             AlertHelper.popEmptyField("fournisseur");
@@ -314,7 +319,7 @@ public class OrderFormFormController implements Initializable {
             return null;
         }
 
-        OrderForm newOrderForm = new OrderForm(number, purchaser, provider, date, addedEntries);
+        OrderForm newOrderForm = new OrderForm(number, purchaser, provider, date, addedEntries, deliveryDate);
 
         // add ids if update
         if (orderForm != null) {
