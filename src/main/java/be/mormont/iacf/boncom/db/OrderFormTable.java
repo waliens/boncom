@@ -19,6 +19,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
     static final public String FIELD_PURCHASER = "purchaser";
     static final public String FIELD_ISSUE_DATE = "issue_date";
     static final public String FIELD_NUMBER = "number";
+    static final public String FIELD_DELIVERY_DATE = "delivery_date";
 
     static final public String NAME = "order_form"; // table name
 
@@ -26,20 +27,22 @@ public class OrderFormTable extends BaseTable<OrderForm> {
     String insertQuery() {
         return "INSERT INTO " + NAME + "(" +
                     FIELD_PROVIDER + ", " + FIELD_PURCHASER + ", " +
-                    FIELD_ISSUE_DATE + ", " + FIELD_NUMBER +
-                ") VALUES (?, ?, ?, ?)";
+                    FIELD_ISSUE_DATE + ", " + FIELD_NUMBER + ", " + FIELD_DELIVERY_DATE +
+                ") VALUES (?, ?, ?, ?, ?)";
     }
 
     PreparedStatement insertStatementWithAutoNumber(Connection conn, OrderForm orderForm) throws SQLException {
+        // TODO take into account yearly number reset !
         PreparedStatement statement = conn.prepareStatement(
             "INSERT INTO " + NAME + "(" +
                     FIELD_PROVIDER + ", " + FIELD_PURCHASER + ", " +
-                    FIELD_ISSUE_DATE + ", " + FIELD_NUMBER +
-                    ") SELECT ?, ?, ?, IFNULL(MAX(" + FIELD_NUMBER + "), 0) + 1 FROM " + NAME
+                    FIELD_ISSUE_DATE + ", " + FIELD_NUMBER + ", " + FIELD_DELIVERY_DATE +
+                    ") SELECT ?, ?, ?, IFNULL(MAX(" + FIELD_NUMBER + "), 0) + 1, ? FROM " + NAME
         );
         statement.setLong(1, orderForm.getProvider().getId());
         statement.setLong(2, orderForm.getPurchaser().getId());
         statement.setDate(3, Date.valueOf(orderForm.getDate()));
+        statement.setDate(4, orderForm.hasDeliveryDate() ? Date.valueOf(orderForm.getDeliveryDate()) : null);
         return statement;
     }
 
@@ -50,6 +53,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         statement.setLong(2, object.getPurchaser().getId());
         statement.setDate(3, Date.valueOf(object.getDate()));
         statement.setLong(4, object.getNumber());
+        statement.setDate(5, object.hasDeliveryDate() ? Date.valueOf(object.getDeliveryDate()) : null);
         return statement;
     }
 
@@ -97,7 +101,7 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                 " INNER JOIN (" + purchaserSelect + ") as purchaser ON " + NAME + "." + FIELD_PURCHASER  + "=purchaser.purchaser_id";
      }
 
-    private Entity getEntityWithOffset(ResultSet set, String fieldPrefix) throws SQLException{
+    private Entity getEntityWithPrefix(ResultSet set, String fieldPrefix) throws SQLException{
         Address address = new Address(
                 set.getString(fieldPrefix + EntityTable.FIELD_STREET),
                 set.getString(fieldPrefix + EntityTable.FIELD_HOUSE_NUMBER),
@@ -115,15 +119,15 @@ public class OrderFormTable extends BaseTable<OrderForm> {
     }
 
     private OrderForm makeShallowOrderForm(ResultSet set) throws SQLException {
-        final int OFFSET_PROVIDER = 5, OFFSET_PURCHASER = OFFSET_PROVIDER + 9;
-        Date date = set.getDate(4);
+        Date deliveryDate = set.getDate(FIELD_DELIVERY_DATE);
         return new OrderForm(
-                set.getLong(1),
-                set.getLong(5),
-                getEntityWithOffset(set, "purchaser_"),
-                getEntityWithOffset(set, "provider_"),
-                date.toLocalDate(),
-                new ArrayList<>()
+                set.getLong(FIELD_ID),
+                set.getLong(FIELD_NUMBER),
+                getEntityWithPrefix(set, "purchaser_"),
+                getEntityWithPrefix(set, "provider_"),
+                set.getDate(FIELD_ISSUE_DATE).toLocalDate(),
+                new ArrayList<>(),
+                deliveryDate != null ? deliveryDate.toLocalDate() : null
         );
     }
 
@@ -249,7 +253,8 @@ public class OrderFormTable extends BaseTable<OrderForm> {
                     FIELD_ISSUE_DATE + "=?, " +
                     FIELD_NUMBER + "=?, " +
                     FIELD_PROVIDER + "=?, " +
-                    FIELD_PURCHASER + "=? " +
+                    FIELD_PURCHASER + "=?, " +
+                    FIELD_DELIVERY_DATE + "=? " +
                 " WHERE " + FIELD_ID + "=?";
     }
 
@@ -259,7 +264,8 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         statement.setLong(2, form.getNumber());
         statement.setLong(3, form.getProvider().getId());
         statement.setLong(4, form.getPurchaser().getId());
-        statement.setLong(5, form.getId());
+        statement.setDate(5, form.hasDeliveryDate() ? Date.valueOf(form.getDeliveryDate()) : null);
+        statement.setLong(6, form.getId());
         return statement;
     }
 

@@ -39,6 +39,7 @@ public class MigrationHandler
         migrations = new ArrayList<>();
         addMigration("create_database", new CreateDatabaseMigration());
         addMigration("add_iacf", new InsertIacfProviderMigration());
+        addMigration("add_delivery_date_col", new AddDeliveryDateFieldMigration());
     }
 
     /**
