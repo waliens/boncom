@@ -51,6 +51,7 @@
                 <buttons>
                     <Button fx:id="orderFormEditButton" mnemonicParsing="false" />
                     <Button fx:id="orderFormExportButton" mnemonicParsing="false" />
+                    <Button fx:id="orderFormDeleteButton" mnemonicParsing="false" />
                     <Button fx:id="orderFormRefreshButton" mnemonicParsing="false" />
                 </buttons>
             </ButtonBar>

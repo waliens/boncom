@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -49,6 +50,7 @@ public class RootSceneController implements Initializable {
     @FXML private Label orderFormsLabel;
     @FXML private Button orderFormEditButton;
     @FXML private Button orderFormExportButton;
+    @FXML private Button orderFormDeleteButton;
     @FXML private Button orderFormRefreshButton;
     @FXML private TableView<OrderForm> orderFormsTable;
     @FXML private TableColumn<OrderForm, Long> orderFormNumberColumn;
@@ -83,6 +85,7 @@ public class RootSceneController implements Initializable {
         // order forms
         orderFormsLabel.setText("Historique");
         orderFormEditButton.setText("Mettre à jour");
+        orderFormDeleteButton.setText("Supprimer");
         orderFormExportButton.setText("Exporter");
         orderFormRefreshButton.setText("Rafraîchir");
         resetFilterButton.setText("Reset");
@@ -98,6 +101,30 @@ public class RootSceneController implements Initializable {
             OrderForm selected = orderFormsTable.getSelectionModel().getSelectedItem();
             nodeCtrl.getValue().setOrderForm(selected);
             nodeCtrl.getValue().setHandler(form -> refreshHistory());
+        });
+
+        orderFormDeleteButton.setOnMouseClicked(event -> {
+            OrderForm selected = orderFormsTable.getSelectionModel().getSelectedItem();
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Suppression de bon de commande");
+            alert.setHeaderText("Confirmer la suppression ?");
+            alert.setContentText("Suppression du bon de commande n°" + selected.getNumber() + ", fournisseur: " + selected.getProvider().getName());
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK){
+                new OrderFormTable().deleteOrderForm(selected, new Callback<OrderForm>() {
+                    @Override
+                    public void success(OrderForm object) {
+                        refreshHistory();
+                    }
+
+                    @Override
+                    public void failure(Exception e) {
+                        AlertHelper.popException(e);
+                    }
+                });
+            }
         });
 
         orderFormRefreshButton.setOnMouseClicked(event -> refreshHistory());
@@ -178,6 +205,7 @@ public class RootSceneController implements Initializable {
     private void setTableButtonsDisableProperty(boolean enable) {
         orderFormEditButton.setDisable(!enable);
         orderFormExportButton.setDisable(!enable);
+        orderFormDeleteButton.setDisable(!enable);
     }
 
     private void refreshHistory() {

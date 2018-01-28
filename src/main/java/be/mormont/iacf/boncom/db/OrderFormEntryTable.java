@@ -275,4 +275,14 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
         }
         return statement;
     }
+
+    private String deleteByOrderFormQuery() {
+        return "DELETE FROM " + NAME + " WHERE " + FIELD_ORDER_FORM + "=?";
+    }
+
+    PreparedStatement deleteByOrderFormStatement(Connection conn, long orderFormId) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(deleteByOrderFormQuery());
+        statement.setLong(1, orderFormId);
+        return statement;
+    }
 }

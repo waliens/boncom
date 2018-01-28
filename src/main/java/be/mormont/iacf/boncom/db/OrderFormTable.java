@@ -206,6 +206,32 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         }
     }
 
+    private String deleteOrderFormQuery() {
+        return "DELETE FROM " + NAME + " WHERE " + FIELD_ID + "=?";
+    }
+
+    PreparedStatement deleteStatement(Connection conn, long orderFormId) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(deleteQuery());
+        statement.setLong(1, orderFormId);
+        return statement;
+    }
+
+    public void deleteOrderForm(OrderForm orderForm, Callback<OrderForm> callback) {
+        try {
+            Connection conn = Database.getDatabase().getConnection();
+            OrderFormEntryTable orderFormEntryTable = new OrderFormEntryTable();
+            try (PreparedStatement orderFormStmt = deleteStatement(conn, orderForm.getId());
+                 PreparedStatement entriesStmt = orderFormEntryTable.deleteByOrderFormStatement(conn, orderForm.getId())) {
+                entriesStmt.executeUpdate();
+                orderFormStmt.executeUpdate();
+                conn.commit();
+                callback.success(orderForm);
+            }
+        } catch (SQLException | IOException e) {
+            callback.failure(e);
+        }
+    }
+
     private abstract class AddFormPreparedStatementBuilder implements Database.PreparedStatementNoReturnBuilder<OrderForm> {
         private OrderForm orderForm;
         private Callback<OrderForm> callback;
