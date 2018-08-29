@@ -11,10 +11,10 @@ public class OrderFormEntry implements Comparable<OrderFormEntry> {
     private long orderFormId;
     private String reference;
     private String designation;
-    private int quantity;
+    private float quantity;
     private BigDecimal unitPrice;
 
-    public OrderFormEntry(long id, long orderFormId, String reference, String designation, int quantity, BigDecimal unitPrice) {
+    public OrderFormEntry(long id, long orderFormId, String reference, String designation, float quantity, BigDecimal unitPrice) {
         this.id = id;
         this.orderFormId = orderFormId;
         this.reference = reference;
@@ -23,7 +23,7 @@ public class OrderFormEntry implements Comparable<OrderFormEntry> {
         this.unitPrice = unitPrice;
     }
 
-    public OrderFormEntry(String reference, String designation, int quantity, BigDecimal unitPrice) {
+    public OrderFormEntry(String reference, String designation, float quantity, BigDecimal unitPrice) {
         this(-1, -1, reference, designation, quantity, unitPrice);
     }
 
@@ -47,11 +47,11 @@ public class OrderFormEntry implements Comparable<OrderFormEntry> {
         this.designation = designation;
     }
 
-    public int getQuantity() {
+    public float getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(float quantity) {
         this.quantity = quantity;
     }
 

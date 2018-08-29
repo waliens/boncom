@@ -16,17 +16,17 @@ public class ObservableOrderFormEntry {
     private SimpleLongProperty orderFormId;
     private SimpleStringProperty reference;
     private SimpleStringProperty designation;
-    private SimpleIntegerProperty quantity;
+    private SimpleFloatProperty quantity;
     private SimpleObjectProperty<BigDecimal> unitPrice;
     private SimpleObjectProperty<BigDecimal> totalPrice;
 
 
-    public ObservableOrderFormEntry(long id, long orderFormId, String reference, String designation, int quantity, BigDecimal unitPrice) {
+    public ObservableOrderFormEntry(long id, long orderFormId, String reference, String designation, float quantity, BigDecimal unitPrice) {
         this.id = new SimpleLongProperty(id);
         this.orderFormId = new SimpleLongProperty(orderFormId);
         this.reference = new SimpleStringProperty(reference);
         this.designation = new SimpleStringProperty(designation);
-        this.quantity = new SimpleIntegerProperty(quantity);
+        this.quantity = new SimpleFloatProperty(quantity);
         this.unitPrice = new SimpleObjectProperty<>(unitPrice);
         ObjectBinding<BigDecimal> objectBinding = new ObjectBinding<BigDecimal>() {
             {
@@ -43,7 +43,7 @@ public class ObservableOrderFormEntry {
         this.totalPrice.bind(objectBinding);
     }
 
-    public ObservableOrderFormEntry(String reference, String designation, int quantity, BigDecimal unitPrice) {
+    public ObservableOrderFormEntry(String reference, String designation, float quantity, BigDecimal unitPrice) {
         this(-1, -1, reference, designation, quantity, unitPrice);
     }
 
@@ -114,15 +114,15 @@ public class ObservableOrderFormEntry {
         this.designation.set(designation);
     }
 
-    public int getQuantity() {
+    public float getQuantity() {
         return quantity.get();
     }
 
-    public SimpleIntegerProperty quantityProperty() {
+    public SimpleFloatProperty quantityProperty() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(float quantity) {
         this.quantity.set(quantity);
     }
 

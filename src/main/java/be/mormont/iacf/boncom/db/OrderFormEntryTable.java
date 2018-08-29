@@ -44,7 +44,7 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
         statement.setLong(1, object.getOrderFormId());
         statement.setString(2, object.getReference());
         statement.setString(3, object.getDesignation());
-        statement.setLong(4, object.getQuantity());
+        statement.setFloat(4, object.getQuantity());
         statement.setBigDecimal(5, object.getUnitPrice());
         return statement;
     }
@@ -85,7 +85,7 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
             statement.setLong(i * nParams + 1, entry.getOrderFormId());
             statement.setString(i * nParams + 2, entry.getReference());
             statement.setString(i * nParams + 3, entry.getDesignation());
-            statement.setInt(i * nParams + 4, entry.getQuantity());
+            statement.setFloat(i * nParams + 4, entry.getQuantity());
             statement.setBigDecimal(i * nParams + 5, entry.getUnitPrice());
         }
         return statement;
@@ -121,7 +121,7 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
             set.getLong(FIELD_ORDER_FORM),
             set.getString(FIELD_REFERENCE),
             set.getString(FIELD_DESIGNATION),
-            set.getInt(FIELD_QUANTITY),
+            set.getFloat(FIELD_QUANTITY),
             set.getBigDecimal(FIELD_UNIT_PRICE)
         );
     }
@@ -243,7 +243,7 @@ public class OrderFormEntryTable extends BaseTable<OrderFormEntry> {
         PreparedStatement statement = conn.prepareStatement(updateEntryQuery(hasId));
         statement.setString(1, entry.getReference());
         statement.setString(2, entry.getDesignation());
-        statement.setLong(3, entry.getQuantity());
+        statement.setFloat(3, entry.getQuantity());
         statement.setBigDecimal(4, entry.getUnitPrice());
         statement.setLong(5, entry.getOrderFormId());
         if (hasId) {

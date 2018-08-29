@@ -60,7 +60,7 @@ public class OrderFormEntryFormController implements Initializable {
             // pre-filling fields
             referenceField.setText(orderFormEntry.getReference());
             designationField.setText(orderFormEntry.getDesignation());
-            quantityField.setText(Integer.toString(orderFormEntry.getQuantity()));
+            quantityField.setText(Float.toString(orderFormEntry.getQuantity()));
             unitPriceField.setText(orderFormEntry.getUnitPrice().toString());
         }
     }
@@ -100,14 +100,14 @@ public class OrderFormEntryFormController implements Initializable {
             AlertHelper.popEmptyField("quantité");
             return null;
         }
-        int quantity;
+        float quantity;
         try {
-            quantity = Integer.parseInt(strQuantity);
+            quantity = Float.parseFloat(strQuantity);
         } catch (NumberFormatException e) {
             AlertHelper.popInvalidField("quantité", e);
             return null;
         }
-        if (quantity < 1) {
+        if (quantity <= 0.0) {
             AlertHelper.popInvalidField("quantité", "ne peut pas être négatif ou nul.");
             return null;
         }

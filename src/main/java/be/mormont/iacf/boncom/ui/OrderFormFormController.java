@@ -56,7 +56,7 @@ public class OrderFormFormController implements Initializable {
     @FXML private TableView<ObservableOrderFormEntry> entriesTable;
     @FXML private TableColumn<ObservableOrderFormEntry, String> entriesTabColumnReference;
     @FXML private TableColumn<ObservableOrderFormEntry, String> entriesTabColumnDesignation;
-    @FXML private TableColumn<ObservableOrderFormEntry, Integer> entriesTabColumnQuantity;
+    @FXML private TableColumn<ObservableOrderFormEntry, Float> entriesTabColumnQuantity;
     @FXML private TableColumn<ObservableOrderFormEntry, BigDecimal> entriesTabColumnUnitPrice;
     @FXML private TableColumn<ObservableOrderFormEntry, BigDecimal> entriesTabColumnTotal;
     @FXML private Label totalFieldLabel;
@@ -130,7 +130,7 @@ public class OrderFormFormController implements Initializable {
         entriesTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
         entriesTabColumnReference.setCellFactory(col -> new StringEditingCell());
         entriesTabColumnDesignation.setCellFactory(col -> new StringEditingCell());
-        entriesTabColumnQuantity.setCellFactory(col -> new IntegerEditingCell());
+        entriesTabColumnQuantity.setCellFactory(col -> new FloatEditingCell());
         entriesTabColumnUnitPrice.setCellFactory(col -> new CurrencyEditingCell());
         entriesTabColumnTotal.setCellFactory(col -> new CurrencyEditingCell());
         entriesTabColumnTotal.setEditable(false);
@@ -416,9 +416,8 @@ public class OrderFormFormController implements Initializable {
         }
     }
 
-    class IntegerEditingCell extends EditingCell<ObservableOrderFormEntry, Integer> {
-        @Override protected Integer fromString(String v) {
-            return Integer.parseInt(v);
-        }
+    class FloatEditingCell extends EditingCell<ObservableOrderFormEntry, Float> {
+        @Override
+        protected Float fromString(String v) { return Float.parseFloat(v); }
     }
 }
