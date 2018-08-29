@@ -198,7 +198,7 @@ public class OrderFormFormController implements Initializable {
         entityTable.getAllEntities(new be.mormont.iacf.boncom.db.Callback<ArrayList<Entity>>() {
             @Override
             public void success(ArrayList<Entity> object) {
-                object.sort(Comparator.comparing(Entity::getName));
+                object.sort(Comparator.comparing(e -> e.getName().toLowerCase()));
                 providersList.addAll(object);
                 if (orderForm != null) {
                     providerField.getSelectionModel().select(orderForm.getProvider());
