@@ -14,6 +14,7 @@ import java.util.Map;
 
 import be.mormont.iacf.boncom.data.OrderFormEntry;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
@@ -38,7 +39,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
     static {
         MAX_ENTRIES = 31;
         ROW_DATE = 1;
-        ROW_NAME = 4;
+        ROW_NAME = 3;
         ROW_ADDRESS = ROW_NAME + 1;
         ROW_CITY = ROW_ADDRESS + 1;
         ROW_PHONE1 = ROW_CITY + 1;
@@ -163,8 +164,8 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
 
     private void createHeader(Sheet sheet, Map<Integer, Row> rows, OrderForm orderForm) {
         // order form number
-        sheet.addMergedRegion(new CellRangeAddress(ROW_DATE, ROW_DATE, COL_QUANTITY, COL_QUANTITY + 1));
-        rows.get(ROW_DATE).createCell(COL_QUANTITY).setCellValue("Bon de commande n°" + orderForm.getNumber());
+        rows.get(ROW_DATE).createCell(COL_DESIGNATION).setCellValue("Bon de commande");
+        rows.get(ROW_DATE).createCell(COL_UNIT_PRICE).setCellValue("n°" + orderForm.getNumber());
         sheet.addMergedRegion(new CellRangeAddress(ROW_DATE, ROW_DATE, COL_UNIT_PRICE + 1, COL_UNIT_PRICE + 2));
         rows.get(ROW_DATE).createCell(COL_UNIT_PRICE + 1).setCellValue("Date: " + orderForm.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
     }
@@ -232,11 +233,13 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
 
     private void styleSheet(Workbook workbook, Sheet sheet, Map<Integer, Row> rows, int nEntries, int rowDeliveryDate) {
         Font defaultFont = workbook.getFontAt(rows.get(ROW_TABLE_HEADERS).getCell(COL_REF).getCellStyle().getFontIndex());
-        defaultFont.setFontHeightInPoints((short)9);
+        defaultFont.setFontHeightInPoints((short)12);
         Font boldFont = copyFont(workbook, defaultFont);
         boldFont.setBold(true);
         Font redBoldFont = copyFont(workbook, boldFont);
         redBoldFont.setColor(HSSFColor.HSSFColorPredefined.RED.getIndex());
+        Font smallFont = copyFont(workbook, defaultFont);
+        smallFont.setFontHeightInPoints((short)9);
 
         // create some styles
         CellStyle mediumBorderCenteredCellStyle = workbook.createCellStyle();
@@ -245,9 +248,11 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         setBorders(mediumBorderCenteredCellStyle, BorderStyle.MEDIUM);
 
         CellStyle thinBorderCellStyle = workbook.createCellStyle();
+        thinBorderCellStyle.setFont(smallFont);
         setBorders(thinBorderCellStyle, BorderStyle.THIN);
 
         CellStyle thinCenteredCellStyle = workbook.createCellStyle();
+        thinCenteredCellStyle.setFont(smallFont);
         setBorders(thinCenteredCellStyle, BorderStyle.THIN);
 
         CellStyle tableHeaderCellStyle = workbook.createCellStyle();
@@ -263,6 +268,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
 
         CellStyle moneyThinCellStyle = workbook.createCellStyle();
         moneyThinCellStyle.setDataFormat(euroFormatIdx);
+        moneyThinCellStyle.setFont(smallFont);
         setBorders(moneyThinCellStyle, BorderStyle.THIN);
 
         CellStyle boldCellStyle = workbook.createCellStyle();
@@ -272,23 +278,27 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         moneyThinCenteredCellStyle.setDataFormat(euroFormatIdx);
         moneyThinCenteredCellStyle.setAlignment(HorizontalAlignment.CENTER);
         moneyThinCenteredCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        moneyThinCenteredCellStyle.setFont(smallFont);
         setBorders(moneyThinCenteredCellStyle, BorderStyle.THIN);
 
         CellStyle intThinCenteredCellStyle = workbook.createCellStyle();
         intThinCenteredCellStyle.setAlignment(HorizontalAlignment.CENTER);
         intThinCenteredCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        intThinCenteredCellStyle.setFont(smallFont);
         setBorders(intThinCenteredCellStyle, BorderStyle.THIN);
 
         CellStyle centeredThinCellStyle = workbook.createCellStyle();
         centeredThinCellStyle.setAlignment(HorizontalAlignment.CENTER);
         centeredThinCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        centeredThinCellStyle.setFont(smallFont);
         setBorders(centeredThinCellStyle, BorderStyle.THIN);
 
         CellStyle redBoldCellStyle = workbook.createCellStyle();
         redBoldCellStyle.setFont(redBoldFont);
 
         // apply styles
-        rows.get(ROW_DATE).getCell(COL_QUANTITY).setCellStyle(boldCellStyle);
+        rows.get(ROW_DATE).getCell(COL_DESIGNATION).setCellStyle(boldCellStyle);
+        rows.get(ROW_DATE).getCell(COL_UNIT_PRICE).setCellStyle(boldCellStyle);
         rows.get(ROW_DATE).getCell(COL_UNIT_PRICE + 1).setCellStyle(boldCellStyle);
         rows.get(rowDeliveryDate).getCell(COL_DESIGNATION).setCellStyle(redBoldCellStyle);
         rows.get(ROW_NAME).getCell(COL_DESIGNATION).setCellStyle(boldCellStyle);
