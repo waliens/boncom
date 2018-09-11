@@ -15,6 +15,7 @@ import java.util.Map;
 import be.mormont.iacf.boncom.data.OrderFormEntry;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -26,7 +27,7 @@ import org.apache.poi.util.Units;
  */
 public class OrderFormXlsExporter implements Exporter<OrderForm> {
     private static int MAX_ENTRIES;
-    private static int ROW_DATE, ROW_DELIVERY_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1,
+    private static int ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1,
             ROW_PHONE2, ROW_CUSTOMER_NB, ROW_TARIF, ROW_TABLE_HEADERS,
             ROW_TABLE_FIRST_ENTRY, ROW_TOTAL, ROW_SIGN;
 
@@ -37,7 +38,6 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
     static {
         MAX_ENTRIES = 31;
         ROW_DATE = 1;
-        ROW_DELIVERY_DATE = 2;
         ROW_NAME = 4;
         ROW_ADDRESS = ROW_NAME + 1;
         ROW_CITY = ROW_ADDRESS + 1;
@@ -50,7 +50,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         ROW_TOTAL = ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES + 1;
         ROW_SIGN = ROW_TOTAL + 2;
         ROWS = new int[] {
-            ROW_DATE, ROW_DELIVERY_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1,
+            ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1,
             ROW_PHONE2, ROW_CUSTOMER_NB, ROW_TARIF, ROW_TABLE_HEADERS, ROW_TABLE_FIRST_ENTRY,
             ROW_TOTAL, ROW_SIGN
         };
@@ -106,10 +106,15 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         sheet.addMergedRegion(new CellRangeAddress(ROW_PHONE1, ROW_PHONE1, COL_QUANTITY, COL_TOTAL));
         sheet.addMergedRegion(new CellRangeAddress(ROW_PHONE2, ROW_PHONE2, COL_QUANTITY, COL_TOTAL));
         sheet.addMergedRegion(new CellRangeAddress(ROW_CUSTOMER_NB, ROW_CUSTOMER_NB, COL_QUANTITY, COL_TOTAL));
-        writeEntity(rows, object.getPurchaser(), "", COL_DESIGNATION);
+        int rowDeliveryDate = writeEntity(rows, object.getPurchaser(), "", COL_DESIGNATION);
         writeEntity(rows, object.getProvider(), object.getProvider().getCustomerNb(), COL_QUANTITY);
+        sheet.addMergedRegion(new CellRangeAddress(ROW_TABLE_HEADERS, ROW_TABLE_HEADERS, COL_UNIT_PRICE,COL_UNIT_PRICE + 1));
 
-        sheet.addMergedRegion(new CellRangeAddress(ROW_TABLE_HEADERS, ROW_TABLE_HEADERS, COL_UNIT_PRICE, COL_UNIT_PRICE + 1));
+        // Add delivery date
+        Cell deliveryDateCell = rows.get(rowDeliveryDate).createCell(COL_DESIGNATION);
+        if (object.hasDeliveryDate()) {
+            deliveryDateCell.setCellValue("Livraison: " + object.getDeliveryDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        }
 
         rows.get(ROW_TABLE_HEADERS).createCell(COL_REF).setCellValue("REF");
         rows.get(ROW_TABLE_HEADERS).createCell(COL_DESIGNATION).setCellValue("DESIGNATION");
@@ -150,7 +155,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         rows.get(ROW_SIGN).createCell(COL_UNIT_PRICE).setCellValue("J-N MORMONT, le Comptable");
 
         // style
-        styleSheet(book, sheet, rows, object.getEntries().size());
+        styleSheet(book, sheet, rows, object.getEntries().size(), rowDeliveryDate);
 
         // save
         saveWorkfbook(book, filepath);
@@ -162,11 +167,6 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         rows.get(ROW_DATE).createCell(COL_QUANTITY).setCellValue("Bon de commande n°" + orderForm.getNumber());
         sheet.addMergedRegion(new CellRangeAddress(ROW_DATE, ROW_DATE, COL_UNIT_PRICE + 1, COL_UNIT_PRICE + 2));
         rows.get(ROW_DATE).createCell(COL_UNIT_PRICE + 1).setCellValue("Date: " + orderForm.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        sheet.addMergedRegion(new CellRangeAddress(ROW_DELIVERY_DATE, ROW_DELIVERY_DATE, COL_UNIT_PRICE + 1, COL_UNIT_PRICE + 2));
-        Cell deliveryDateCell = rows.get(ROW_DELIVERY_DATE).createCell(COL_UNIT_PRICE + 1);
-        if (orderForm.hasDeliveryDate()) {
-            deliveryDateCell.setCellValue("Livraison: " + orderForm.getDeliveryDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        }
     }
 
     private void saveWorkfbook(Workbook workbook, String filepath) throws IOException {
@@ -180,7 +180,15 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         return new HSSFWorkbook();
     }
 
-    private void writeEntity(Map<Integer, Row> rows, Entity purchaser, String customerNb, int column) {
+    /**
+     *
+     * @param rows
+     * @param purchaser
+     * @param customerNb
+     * @param column
+     * @return Row number after the last entity line
+     */
+    private int writeEntity(Map<Integer, Row> rows, Entity purchaser, String customerNb, int column) {
         String name = purchaser.getName().toUpperCase() + (customerNb.isEmpty() ? "" : " (client: " + customerNb + ")");
         rows.get(ROW_NAME).createCell(column).setCellValue(name);
         Address address = purchaser.getAddress();
@@ -198,6 +206,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         if (phones.length >= 2 && phones[1].trim().length() > 0) {
             rows.get(curr++).createCell(column).setCellValue(phones[1]);
         }
+        return curr;
     }
 
     private Font copyFont(Workbook book, Font toCopy) {
@@ -221,11 +230,13 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         style.setBorderTop(borderStyle);
     }
 
-    private void styleSheet(Workbook workbook, Sheet sheet, Map<Integer, Row> rows, int nEntries) {
+    private void styleSheet(Workbook workbook, Sheet sheet, Map<Integer, Row> rows, int nEntries, int rowDeliveryDate) {
         Font defaultFont = workbook.getFontAt(rows.get(ROW_TABLE_HEADERS).getCell(COL_REF).getCellStyle().getFontIndex());
         defaultFont.setFontHeightInPoints((short)9);
         Font boldFont = copyFont(workbook, defaultFont);
         boldFont.setBold(true);
+        Font redBoldFont = copyFont(workbook, boldFont);
+        redBoldFont.setColor(HSSFColor.HSSFColorPredefined.RED.getIndex());
 
         // create some styles
         CellStyle mediumBorderCenteredCellStyle = workbook.createCellStyle();
@@ -273,10 +284,13 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         centeredThinCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         setBorders(centeredThinCellStyle, BorderStyle.THIN);
 
+        CellStyle redBoldCellStyle = workbook.createCellStyle();
+        redBoldCellStyle.setFont(redBoldFont);
+
         // apply styles
         rows.get(ROW_DATE).getCell(COL_QUANTITY).setCellStyle(boldCellStyle);
         rows.get(ROW_DATE).getCell(COL_UNIT_PRICE + 1).setCellStyle(boldCellStyle);
-        rows.get(ROW_DELIVERY_DATE).getCell(COL_UNIT_PRICE + 1).setCellStyle(boldCellStyle);
+        rows.get(rowDeliveryDate).getCell(COL_DESIGNATION).setCellStyle(redBoldCellStyle);
         rows.get(ROW_NAME).getCell(COL_DESIGNATION).setCellStyle(boldCellStyle);
         rows.get(ROW_NAME).getCell(COL_QUANTITY).setCellStyle(boldCellStyle);
 
