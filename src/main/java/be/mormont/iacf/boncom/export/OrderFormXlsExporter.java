@@ -37,7 +37,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
     private static String EURO_CURRENCY_FORMAT = "#,##0.00\\ \"€\";\\-\\ #,##0.00\\ \"€\";\\-\\ \"€\"";
 
     static {
-        MAX_ENTRIES = 31;
+        MAX_ENTRIES = 29;
         ROW_DATE = 1;
         ROW_NAME = 3;
         ROW_ADDRESS = ROW_NAME + 1;
@@ -89,13 +89,13 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         Map<Integer, Row> rows = getRows(sheet);
 
         // set column widths
-        int baseWidth = baseColumnWidth(9) * 256;
+        int baseWidth = baseColumnWidth(9) * 176;
         sheet.setColumnWidth(COL_REF, baseWidth);
         sheet.setColumnWidth(COL_DESIGNATION, baseWidth * 4);
         sheet.setColumnWidth(COL_QUANTITY, baseWidth);
-        sheet.setColumnWidth(COL_UNIT_PRICE, baseWidth);
-        sheet.setColumnWidth(COL_UNIT_PRICE, baseWidth + 1);
-        sheet.setColumnWidth(COL_TOTAL, baseWidth);
+        sheet.setColumnWidth(COL_UNIT_PRICE, (int)(baseWidth / 1.5));
+        sheet.setColumnWidth(COL_UNIT_PRICE + 1, (int)(baseWidth / 1.5));
+        sheet.setColumnWidth(COL_TOTAL, (int)(1.5 * baseWidth));
 
         // header
         createHeader(sheet, rows, object);
@@ -153,7 +153,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
 
         // sign row
         rows.get(ROW_SIGN).createCell(COL_DESIGNATION).setCellValue("D. CORVERS, l'Ordonnateur");
-        rows.get(ROW_SIGN).createCell(COL_UNIT_PRICE).setCellValue("J-N MORMONT, le Comptable");
+        rows.get(ROW_SIGN).createCell(COL_QUANTITY).setCellValue("J-N MORMONT, le Comptable");
 
         // style
         styleSheet(book, sheet, rows, object.getEntries().size(), rowDeliveryDate);
