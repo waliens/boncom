@@ -10,6 +10,8 @@ import be.mormont.iacf.boncom.db.UICallback;
 import be.mormont.iacf.boncom.ui.util.EditingCell;
 import be.mormont.iacf.boncom.ui.util.ObservableOrderFormEntry;
 import be.mormont.iacf.boncom.util.StringUtil;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -91,6 +93,22 @@ public class OrderFormFormController implements Initializable {
         providerField.setItems(providersList);
         providerField.setCellFactory(param -> new EntityListCell());
         providerField.setButtonCell(new EntityListCell());
+
+        // check if exist
+        numberField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) { // if loses focus
+                int newNumber = Integer.parseInt(numberField.textProperty().get());
+                if (orderForm != null && newNumber != orderForm.getNumber()) {
+                    int year = orderForm.getDate().getYear();
+                    new OrderFormTable().countOrderFormsByNumberAndYear(year, newNumber, count -> {
+                        if (count >= 1) {
+                            popExistingNumberAlert();
+                        }
+                    });
+                }
+            }
+        });
+
 
         /* Entries table */
         entries = FXCollections.observableArrayList();
@@ -302,11 +320,24 @@ public class OrderFormFormController implements Initializable {
      * Returns true if update operations can be continued
      */
     private boolean popNumberModifiedAlert() {
+        return popNumberFieldAlert(
+            "Le numéro de bon de commande a été modifié. Êtes-vous certain de vouloir effectuer cette " +
+            "modification ? 'Restaurer' va restaurer le numéro actuel du bon de commande.");
+    }
+
+
+    private boolean popExistingNumberAlert() {
+        return popNumberFieldAlert(
+            "Le numéro de bon de commande " + numberField.getText() + " existe déjà pour l'année " +
+                    dateField.valueProperty().get().getYear() + ". 'Restaurer' va restaurer le numéro actuel du bon de commande."
+        );
+    }
+
+    private boolean popNumberFieldAlert(String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Mise à jour du BDC");
         alert.setHeaderText("Numéro de bon de commande modifié");
-        alert.setContentText("Le numéro de bon de commande a été modifié. Êtes-vous certain de vouloir effectuer cette " +
-                "modification ? 'Restaurer' va restaurer le numéro actuel du bon de commande.");
+        alert.setContentText(content);
 
         ButtonType restoreButton = new ButtonType("Restaurer");
         ButtonType okButton = new ButtonType("Ok");

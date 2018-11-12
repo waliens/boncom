@@ -387,4 +387,31 @@ public class OrderFormTable extends BaseTable<OrderForm> {
             callback.failure(e);
         }
     }
+
+    private String countOrderFormsByNumberAndYearQuery() {
+        return "SELECT COUNT(*) FROM " + NAME + " WHERE strftime('%Y', datetime(issue_date/1000, 'unixepoch')) = ? AND " + FIELD_NUMBER + "=?";
+    }
+
+    private PreparedStatement countOrderFormsByNumberAndYearStatement(Connection conn, int year, long number) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(countOrderFormsByNumberAndYearQuery());
+        statement.setString(1, Integer.toString(year));
+        statement.setLong(2, number);
+        return statement;
+    }
+
+    public void countOrderFormsByNumberAndYear(int year, long number, Callback<Long> callback) {
+        try {
+            Connection conn = Database.getDatabase().getConnection();
+            try (PreparedStatement orderFormsStatement =  countOrderFormsByNumberAndYearStatement(conn, year, number);
+                 ResultSet countSet = orderFormsStatement.executeQuery()) {
+                if (countSet.next()) {
+                    callback.success(countSet.getLong(1));
+                } else {
+                    callback.success(0L);
+                }
+            }
+        } catch (SQLException | IOException e) {
+            callback.failure(e);
+        }
+    }
 }
