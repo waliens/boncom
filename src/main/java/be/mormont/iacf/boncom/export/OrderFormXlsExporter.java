@@ -190,7 +190,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
      * @return Row number after the last entity line
      */
     private int writeEntity(Map<Integer, Row> rows, Entity purchaser, String customerNb, int column) {
-        String name = purchaser.getName().toUpperCase() + (customerNb.isEmpty() ? "" : " (client: " + customerNb + ")");
+        String name = purchaser.getName().toUpperCase();
         rows.get(ROW_NAME).createCell(column).setCellValue(name);
         Address address = purchaser.getAddress();
         String addressStr = address.getStreet() + ", " + address.getNumber();
@@ -206,6 +206,9 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         }
         if (phones.length >= 2 && phones[1].trim().length() > 0) {
             rows.get(curr++).createCell(column).setCellValue(phones[1]);
+        }
+        if (!customerNb.isEmpty()) {
+            rows.get(curr++).createCell(column).setCellValue("Client: " + customerNb);
         }
         return curr;
     }
