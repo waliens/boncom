@@ -56,13 +56,15 @@
                 </buttons>
             </ButtonBar>
             <Label fx:id="providerFilterLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <ComboBox fx:id="providerFilterComboBox" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1"  />
-            <ButtonBar GridPane.columnIndex="2" GridPane.rowIndex="1">
+            <ComboBox fx:id="providerFilterComboBox" prefWidth="125.0" GridPane.columnIndex="1" GridPane.rowIndex="1"  />
+            <Label fx:id="yearFilterLabel" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <ComboBox fx:id="yearFilterComboBox" prefWidth="90.0" GridPane.columnIndex="3" GridPane.rowIndex="1"  />
+            <ButtonBar GridPane.columnIndex="4" GridPane.rowIndex="1">
                 <buttons>
                     <Button fx:id="resetFilterButton" mnemonicParsing="false" />
                 </buttons>
             </ButtonBar>
-            <TableView fx:id="orderFormsTable" minHeight="100.0" prefHeight="400.0" GridPane.columnIndex="0" GridPane.columnSpan="3" GridPane.rowIndex="2" >
+            <TableView fx:id="orderFormsTable" minHeight="100.0" prefHeight="400.0" GridPane.columnIndex="0" GridPane.columnSpan="5" GridPane.rowIndex="2" >
                 <columns>
                     <TableColumn fx:id="orderFormNumberColumn" styleClass="centeredColumn" />
                     <TableColumn fx:id="orderFormDateColumn" styleClass="centeredColumn" />

@@ -10,6 +10,7 @@ import be.mormont.iacf.boncom.util.StringUtil;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -26,9 +27,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Romain on 03-07-17.
@@ -60,11 +61,15 @@ public class RootSceneController implements Initializable {
     @FXML private TableColumn<OrderForm, String> orderFormProviderColumn;
     @FXML private Label providerFilterLabel;
     @FXML private ComboBox<Entity> providerFilterComboBox;
+    @FXML public Label yearFilterLabel;
+    @FXML public ComboBox<Integer> yearFilterComboBox;
     @FXML private Button resetFilterButton;
 
     private ObservableList<Entity> providers;
+    private ObservableList<Integer> years;
     private ObservableList<OrderForm> orderForms;
-    private FilteredList<OrderForm> filteredOrderForms;
+    private FilteredList<OrderForm> providerFilteredOrderForms;
+    private FilteredList<OrderForm> yearFilteredOrderForms;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -172,29 +177,58 @@ public class RootSceneController implements Initializable {
 
         // data
         orderForms = FXCollections.observableArrayList();
-        filteredOrderForms = new FilteredList<>(orderForms);
-        SortedList sortedOrderForms = new SortedList<>(filteredOrderForms);
+        providerFilteredOrderForms = new FilteredList<>(orderForms);
+        yearFilteredOrderForms = new FilteredList<>(providerFilteredOrderForms);
+        SortedList sortedOrderForms = new SortedList<>(yearFilteredOrderForms);
         sortedOrderForms.comparatorProperty().bind(orderFormsTable.comparatorProperty());
         orderFormsTable.setItems(sortedOrderForms);
-        refreshHistory();
 
         // provider filtering
         providers = FXCollections.observableArrayList();
+        SortedList<Entity> sortedProviders = new SortedList<>(providers);
+        sortedProviders.setComparator(Comparator.comparing(a -> a.getName().toLowerCase()));
         providerFilterLabel.setText("Fournisseurs:");
-        providerFilterComboBox.setItems(providers);
+        providerFilterComboBox.setItems(sortedProviders);
         providerFilterComboBox.setCellFactory(param -> new EntityListCell());
         providerFilterComboBox.setButtonCell(new EntityListCell());
         providerFilterComboBox.valueProperty().addListener(items -> {
             Entity entity = providerFilterComboBox.getSelectionModel().getSelectedItem();
             if(entity == null) {
-                filteredOrderForms.setPredicate(s -> true);
+                providerFilteredOrderForms.setPredicate(s -> true);
             } else {
-                filteredOrderForms.setPredicate(s -> s.getProvider().getId() == entity.getId());
+                providerFilteredOrderForms.setPredicate(s -> s.getProvider().getId() == entity.getId());
             }
         });
 
-        resetFilterButton.setOnMouseClicked(event -> providerFilterComboBox.getSelectionModel().clearSelection());
+        // year filtering
+        years = FXCollections.observableArrayList();
+        yearFilterLabel.setText("Année:");
+        yearFilterComboBox.setItems(years);
+        orderForms.addListener((ListChangeListener<OrderForm>) c -> {
+            final ObservableList<? extends OrderForm> orderForms = c.getList();
+            List<Integer> yearsToSet = orderForms.stream()
+                .map(orderform -> orderform.getDate().getYear())
+                .distinct().sorted()
+                .collect(Collectors.toList());
+            yearFilterComboBox.getSelectionModel().clearSelection();
+            years.setAll(yearsToSet);
+        });
+        yearFilterComboBox.valueProperty().addListener(items -> {
+            Integer year = yearFilterComboBox.getSelectionModel().getSelectedItem();
+            if(year == null) {
+                yearFilteredOrderForms.setPredicate(s -> true);
+            } else {
+                yearFilteredOrderForms.setPredicate(s -> s.getDate().getYear() == year);
+            }
+        });
 
+
+        resetFilterButton.setOnMouseClicked(event -> {
+            providerFilterComboBox.getSelectionModel().clearSelection();
+            yearFilterComboBox.getSelectionModel().clearSelection();
+        });
+
+        refreshHistory();
         updateProviders();
     }
 
@@ -214,8 +248,8 @@ public class RootSceneController implements Initializable {
             public void success(ArrayList<OrderForm> object) {
                 orderForms.setAll(object);
                 orderFormsTable.getSortOrder().clear();
-                orderFormsTable.getSortOrder().add(orderFormNumberColumn);
                 orderFormsTable.getSortOrder().add(orderFormDateColumn);
+                orderFormsTable.getSortOrder().add(orderFormNumberColumn);
                 orderFormNumberColumn.setSortType(TableColumn.SortType.DESCENDING);
                 orderFormDateColumn.setSortType(TableColumn.SortType.DESCENDING);
                 orderFormDateColumn.setSortable(true);
