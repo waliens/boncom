@@ -138,7 +138,7 @@ public class RootSceneController implements Initializable {
             OrderForm selected = orderFormsTable.getSelectionModel().getSelectedItem();
             FileChooser fileChooser = new FileChooser();
             String providerName = selected.getProvider().getName().toLowerCase().replaceAll("[^a-z0-9]+", "");
-            fileChooser.setInitialFileName(providerName + "_bon_commande_" + selected.getId() + ".xls");
+            fileChooser.setInitialFileName(providerName + "_bc_" + selected.getDate().getYear() + "_" +selected.getNumber() + ".xls");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel", ".xls"));
             File file = fileChooser.showSaveDialog(titleLabel.getScene().getWindow());
             try {
