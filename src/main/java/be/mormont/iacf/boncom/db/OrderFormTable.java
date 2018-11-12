@@ -364,5 +364,27 @@ public class OrderFormTable extends BaseTable<OrderForm> {
         }
     }
 
+    private String getNextOrderFormNumberQuery() {
+        return "SELECT IFNULL(MAX(number), 0) + 1 as next_nb FROM order_form WHERE strftime('%Y', datetime(issue_date/1000, 'unixepoch')) = ?";
+    }
 
+    private PreparedStatement getNextOrderFormNumberStatement(Connection conn, int year) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement(getNextOrderFormNumberQuery());
+        statement.setString(1, Integer.toString(year));
+        return statement;
+    }
+
+    public void getNextOrderFormNumber(int year, Callback<Long> callback) {
+        try {
+            Connection conn = Database.getDatabase().getConnection();
+            try (PreparedStatement getNextNumberStatement = getNextOrderFormNumberStatement(conn, year);
+                ResultSet set = getNextNumberStatement.executeQuery()) {
+                if (set.next()) {
+                    callback.success(set.getLong(1));
+                }
+            }
+        } catch (SQLException | IOException e) {
+            callback.failure(e);
+        }
+    }
 }

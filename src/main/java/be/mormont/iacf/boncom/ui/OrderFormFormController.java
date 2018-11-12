@@ -24,6 +24,7 @@ import javafx.util.Pair;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.rmi.AlreadyBoundException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -220,6 +221,7 @@ public class OrderFormFormController implements Initializable {
         if (orderForm != null) { // new order form
             formTitle.setText("Mise à jour d'un bon de commande (" + orderForm.getNumber() + ")");
             numberField.setText(Long.toString(orderForm.getNumber()));
+            // numberField.setEditable(false);
             dateField.setValue(orderForm.getDate());
             deliveryDateField.setValue(orderForm.getDeliveryDate());
             entries.addAll(convertEntries(orderForm.getEntries()));
@@ -249,24 +251,29 @@ public class OrderFormFormController implements Initializable {
             submitButton.setOnMouseClicked(e -> {
                 OrderForm orderForm = getOrderForm();
                 if (orderForm != null) {
-                    new OrderFormTable().addOrderForm(orderForm, new UICallback<OrderForm>() {
-                        @Override
-                        public void success(OrderForm object) {
-                            handler.handle(orderForm);
-                            closeForm();
-                        }
+                    if (orderForm.getNumber() == OrderForm.UNDEFINED_NUMBER) {
+                        int year = orderForm.getDate().getYear();
+                        new OrderFormTable().getNextOrderFormNumber(year, new Callback<Long>() {
+                            @Override
+                            public void success(Long object) {
+                                orderForm.setNumber(object);
+                                saveOrderFormThenLeave(orderForm);
+                            }
 
-                        @Override
-                        public void failure(Exception e) {
-                            AlertHelper.popAlert(
+                            @Override
+                            public void failure(Exception e) {
+                                AlertHelper.popAlert(
                                     Alert.AlertType.ERROR,
                                     "Erreur",
                                     "Impossible de sauvegarder le bon de commande.",
                                     "L'ajout a échoué à cause de : " + e.getMessage(),
                                     true
-                            );
-                        }
-                    });
+                                );
+                            }
+                        });
+                    } else {
+                        saveOrderFormThenLeave(orderForm);
+                    }
                 }
             });
         }
@@ -289,12 +296,73 @@ public class OrderFormFormController implements Initializable {
         this.orderForm = orderForm;
         refresh();
     }
+
+
+    /**
+     * Returns true if update operations can be continued
+     */
+    private boolean popNumberModifiedAlert() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Mise à jour du BDC");
+        alert.setHeaderText("Numéro de bon de commande modifié");
+        alert.setContentText("Le numéro de bon de commande a été modifié. Êtes-vous certain de vouloir effectuer cette " +
+                "modification ? 'Restaurer' va restaurer le numéro actuel du bon de commande.");
+
+        ButtonType restoreButton = new ButtonType("Restaurer");
+        ButtonType okButton = new ButtonType("Ok");
+        ButtonType cancelButton = new ButtonType("Annuler");
+
+        ObservableList<ButtonType> buttonTypes = alert.getButtonTypes();
+        buttonTypes.clear();
+        buttonTypes.addAll(okButton, restoreButton, cancelButton);
+
+        Optional<ButtonType> option = alert.showAndWait();
+
+        if (!option.isPresent()) {
+            return false;
+        } else if (option.get().getText().equals(okButton.getText())) {
+            return true;
+        } else if (option.get().getText().equals(cancelButton.getText())) {
+            return false;
+        } else { // restore
+            numberField.setText(Long.toString(orderForm.getNumber()));
+            return false;
+        }
+    }
+
+    private void saveOrderFormThenLeave(OrderForm orderForm) {
+        new OrderFormTable().addOrderForm(orderForm, new UICallback<OrderForm>() {
+            @Override
+            public void success(OrderForm object) {
+                handler.handle(orderForm);
+                closeForm();
+            }
+
+            @Override
+            public void failure(Exception e) {
+                AlertHelper.popAlert(
+                        Alert.AlertType.ERROR,
+                        "Erreur",
+                        "Impossible de sauvegarder le bon de commande.",
+                        "L'ajout a échoué à cause de : " + e.getMessage(),
+                        true
+                );
+            }
+        });
+    }
     
     private OrderForm getOrderForm() {
         String strNumber = StringUtil.getNotEmptyOrNull(numberField.getText());
         long number;
         try {
-            number = strNumber == null ? OrderForm.UNDEFINED_NUMBER : Long.parseLong(strNumber);
+            if (this.orderForm != null) {
+                number = Long.parseLong(strNumber);
+                if (number != this.orderForm.getNumber() && !popNumberModifiedAlert()) {
+                    return null;
+                }
+            } else {
+                number = strNumber == null ? OrderForm.UNDEFINED_NUMBER : Long.parseLong(strNumber);
+            }
         } catch (NumberFormatException e) {
             AlertHelper.popInvalidField("numéro", e);
             return null;
