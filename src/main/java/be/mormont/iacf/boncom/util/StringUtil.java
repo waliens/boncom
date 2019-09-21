@@ -42,4 +42,8 @@ public class StringUtil {
         regex.append("$");
         return Pattern.compile(regex.toString(), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
     }
+
+    public static String trimOrNull(String s) {
+        return s != null ? s.trim() : s;
+    }
 }

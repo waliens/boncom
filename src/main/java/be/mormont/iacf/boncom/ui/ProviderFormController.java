@@ -6,6 +6,7 @@ import be.mormont.iacf.boncom.data.Entity;
 import be.mormont.iacf.boncom.db.Callback;
 import be.mormont.iacf.boncom.db.EntityTable;
 import be.mormont.iacf.boncom.exceptions.FormContentException;
+import be.mormont.iacf.boncom.util.StringUtil;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -167,13 +168,13 @@ public class ProviderFormController implements Initializable {
 
     private Entity getEntityFromFields() {
         FieldErrorChecker checker = new FieldErrorChecker();
-        String street = streetField.getText().trim();
-        String number = numberField.getText().trim();
-        String box = boxField.getText().trim();
-        String postCode = postCodeField.getText().trim();
-        String city = cityField.getText().trim();
-        String name = nameField.getText().trim();
-        String customerNb = customerNbField.getText().trim();
+        String street = StringUtil.trimOrNull(streetField.getText());
+        String number = StringUtil.trimOrNull(numberField.getText());
+        String box = StringUtil.trimOrNull(boxField.getText());
+        String postCode = StringUtil.trimOrNull(postCodeField.getText());
+        String city = StringUtil.trimOrNull(cityField.getText());
+        String name = StringUtil.trimOrNull(nameField.getText());
+        String customerNb = StringUtil.trimOrNull(customerNbField.getText());
 
         checker.put("rue", street);
         checker.put("numéro", number);
@@ -186,7 +187,7 @@ public class ProviderFormController implements Initializable {
             throw new FormContentException("Le champ '" + empty + "' ne peut pas être vide.");
         }
 
-        if (box.isEmpty()) {
+        if (box != null && box.isEmpty()) {
             box = null;
         }
 
@@ -194,4 +195,6 @@ public class ProviderFormController implements Initializable {
         Address address = new Address(street, number, box, postCode, city);
         return new Entity(name, address, phones.length == 0 ? null : phones, customerNb);
     }
+
+
 }
