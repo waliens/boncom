@@ -37,7 +37,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
     private static String EURO_CURRENCY_FORMAT = "#,##0.00\\ \"€\";\\-\\ #,##0.00\\ \"€\";\\-\\ \"€\"";
 
     static {
-        MAX_ENTRIES = 27;
+        MAX_ENTRIES = 26;
         ROW_DATE = 1;
         ROW_NAME = 3;
         ROW_ADDRESS = ROW_NAME + 1;
