@@ -193,7 +193,10 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         String name = purchaser.getName().toUpperCase();
         rows.get(ROW_NAME).createCell(column).setCellValue(name);
         Address address = purchaser.getAddress();
-        String addressStr = address.getStreet() + ", " + address.getNumber();
+        String addressStr = address.getStreet();
+        if (address.getNumber() != null) {
+            addressStr += ", " + address.getNumber();
+        }
         if (address.getBox() != null) {
             addressStr += ", " + address.getBox();
         }
