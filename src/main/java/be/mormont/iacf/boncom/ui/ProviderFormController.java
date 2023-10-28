@@ -177,7 +177,6 @@ public class ProviderFormController implements Initializable {
         String customerNb = StringUtil.trimOrNull(customerNbField.getText());
 
         checker.put("rue", street);
-        checker.put("numéro", number);
         checker.put("code postal", postCode);
         checker.put("ville", city);
         checker.put("name", name);
@@ -185,6 +184,10 @@ public class ProviderFormController implements Initializable {
         String empty = checker.whichEmpty();
         if (empty != null) {
             throw new FormContentException("Le champ '" + empty + "' ne peut pas être vide.");
+        }
+
+        if (number != null && number.isEmpty()) {
+            number = null;
         }
 
         if (box != null && box.isEmpty()) {
