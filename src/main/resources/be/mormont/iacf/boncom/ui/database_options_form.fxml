@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="be.mormont.iacf.boncom.ui.DatabaseOptionsForm"
+            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="500.0" >
+    <top>
+        <Label fx:id="formTitle" styleClass="title" text="Label" BorderPane.alignment="CENTER" />
+    </top>
+    <center>
+        <GridPane hgap="5" styleClass="gpForm" BorderPane.alignment="CENTER">
+            <columnConstraints>
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+
+            <Label fx:id="databasePathLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <TextField fx:id="databasePathField" disable="true" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="0" />
+            <Button fx:id="databasePathEditButton" GridPane.columnIndex="4" GridPane.rowIndex="0" />
+
+        </GridPane>
+    </center>
+    <bottom>
+
+    </bottom>
+</BorderPane>

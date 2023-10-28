@@ -12,9 +12,17 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.HBox?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.mormont.iacf.boncom.ui.RootSceneController">
     <top>
-        <Label fx:id="titleLabel" styleClass="title" text="Label" BorderPane.alignment="CENTER" />
+        <MenuBar>
+            <Menu text="Options">
+                <MenuItem fx:id="databaseOptionsMenuItem" text="Base de données" />
+            </Menu>
+        </MenuBar>
     </top>
     <center>
         <GridPane hgap="5" styleClass="rootMenu" vgap="5" BorderPane.alignment="CENTER">
@@ -25,7 +33,6 @@
             <rowConstraints>
                 <RowConstraints minHeight="50.0" prefHeight="75.0" vgrow="SOMETIMES" />
             </rowConstraints>
-
             <VBox fx:id="createOrderFormBox" styleClass="rootMenuItem" GridPane.columnIndex="0" GridPane.rowIndex="0">
                 <Label fx:id="createOrderFormLabel" />
             </VBox>

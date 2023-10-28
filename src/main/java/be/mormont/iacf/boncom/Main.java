@@ -45,6 +45,7 @@ public class Main extends Application {
         });
         Pair<Parent, RootSceneController> rootScene = FXMLBuilder.build(ROOT_FXML);
         Scene scene = new Scene(rootScene.getKey());
+        primaryStage.setTitle("BonCom");
         scene.getStylesheets().add(STYLE_CSS);
         primaryStage.setScene(scene);
         primaryStage.show();

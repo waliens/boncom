@@ -20,6 +20,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import javafx.util.Pair;
 
 import java.io.File;
@@ -29,7 +30,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by Romain on 03-07-17.
@@ -40,8 +40,8 @@ public class RootSceneController implements Initializable {
     public static String FXML_BASE_PATH = "/be/mormont/iacf/boncom/ui/";
     private static String PROVIDER_PANEL_FXML = "provider_panel.fxml";
     private static String EDIT_ORDER_FORM_FXML = "order_form_form.fxml";
+    private static String DATABASE_OPTIONS_FORM_XML = "database_options_form.fxml";
 
-    @FXML private Label titleLabel;
     @FXML private VBox createOrderFormBox;
     @FXML private VBox createProviderBox;
     @FXML private Label createOrderFormLabel;
@@ -64,6 +64,7 @@ public class RootSceneController implements Initializable {
     @FXML public Label yearFilterLabel;
     @FXML public ComboBox<Integer> yearFilterComboBox;
     @FXML private Button resetFilterButton;
+    @FXML private MenuItem databaseOptionsMenuItem;
 
     private ObservableList<Entity> providers;
     private ObservableList<Integer> years;
@@ -71,19 +72,28 @@ public class RootSceneController implements Initializable {
     private FilteredList<OrderForm> providerFilteredOrderForms;
     private FilteredList<OrderForm> yearFilteredOrderForms;
 
+    private Window getWindow() {
+        return createOrderFormBox.getScene().getWindow();
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        titleLabel.setText("Bon de commandes");
+
         createOrderFormLabel.setText("Nouveau bon de commande");
         createProviderLabel.setText("Gestion des fournisseurs");
 
+        databaseOptionsMenuItem.setOnAction(event -> {
+            System.out.println(event.toString());
+            FXMLModalHelper.popModal(FXML_BASE_PATH + DATABASE_OPTIONS_FORM_XML, getWindow());
+        });
+
         createOrderFormBox.setOnMouseClicked(event -> {
-            Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, titleLabel.getScene().getWindow());
+            Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, getWindow());
             nodeCtrl.getValue().setOrderForm(null);
             nodeCtrl.getValue().setHandler(form -> refreshHistory());
         });
         createProviderBox.setOnMouseClicked(event -> {
-            Pair<Parent, ProviderPanelController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + PROVIDER_PANEL_FXML, titleLabel.getScene().getWindow());
+            Pair<Parent, ProviderPanelController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + PROVIDER_PANEL_FXML, getWindow());
             nodeCtrl.getKey().getScene().getWindow().setOnCloseRequest(e -> updateProviders());
         });
 
@@ -102,7 +112,7 @@ public class RootSceneController implements Initializable {
         );
 
         orderFormEditButton.setOnMouseClicked(event -> {
-            Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, titleLabel.getScene().getWindow());
+            Pair<Parent, OrderFormFormController> nodeCtrl = FXMLModalHelper.popModal(FXML_BASE_PATH + EDIT_ORDER_FORM_FXML, getWindow());
             OrderForm selected = orderFormsTable.getSelectionModel().getSelectedItem();
             nodeCtrl.getValue().setOrderForm(selected);
             nodeCtrl.getValue().setHandler(form -> refreshHistory());
@@ -140,7 +150,7 @@ public class RootSceneController implements Initializable {
             String providerName = selected.getProvider().getName().toLowerCase().replaceAll("[^a-z0-9]+", "");
             fileChooser.setInitialFileName(providerName + "_bc_" + selected.getDate().getYear() + "_" +selected.getNumber() + ".xls");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel", ".xls"));
-            File file = fileChooser.showSaveDialog(titleLabel.getScene().getWindow());
+            File file = fileChooser.showSaveDialog(getWindow());
             try {
                 if (file != null) {
                     new OrderFormXlsExporter().export(file.getAbsolutePath(), selected);
@@ -207,9 +217,9 @@ public class RootSceneController implements Initializable {
         orderForms.addListener((ListChangeListener<OrderForm>) c -> {
             final ObservableList<? extends OrderForm> orderForms = c.getList();
             List<Integer> yearsToSet = orderForms.stream()
-                .map(orderform -> orderform.getDate().getYear())
-                .distinct().sorted()
-                .collect(Collectors.toList());
+                    .map(orderform -> orderform.getDate().getYear())
+                    .distinct().sorted()
+                    .collect(Collectors.toList());
             yearFilterComboBox.getSelectionModel().clearSelection();
             years.setAll(yearsToSet);
         });
