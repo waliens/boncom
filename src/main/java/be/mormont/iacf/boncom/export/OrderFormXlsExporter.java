@@ -51,9 +51,9 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         ROW_TOTAL = ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES + 1;
         ROW_SIGN = ROW_TOTAL + 2;
         ROWS = new int[] {
-            ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1,
-            ROW_PHONE2, ROW_CUSTOMER_NB, ROW_TARIF, ROW_TABLE_HEADERS, ROW_TABLE_FIRST_ENTRY,
-            ROW_TOTAL, ROW_SIGN
+                ROW_DATE, ROW_NAME, ROW_ADDRESS, ROW_CITY, ROW_PHONE1,
+                ROW_PHONE2, ROW_CUSTOMER_NB, ROW_TARIF, ROW_TABLE_HEADERS, ROW_TABLE_FIRST_ENTRY,
+                ROW_TOTAL, ROW_SIGN
         };
         COL_REF = 0;
         COL_DESIGNATION = 1;
@@ -61,7 +61,7 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
         COL_UNIT_PRICE = 3;
         COL_TOTAL = 5;
         COLS = new int[] {
-            COL_REF, COL_DESIGNATION, COL_QUANTITY, COL_UNIT_PRICE, COL_TOTAL
+                COL_REF, COL_DESIGNATION, COL_QUANTITY, COL_UNIT_PRICE, COL_TOTAL
         };
     }
 
@@ -146,8 +146,6 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
 
         // total row
         rows.get(ROW_TOTAL).createCell(COL_DESIGNATION).setCellValue("TOTAL COMMANDE");
-        CellRangeAddress qtyCellsRange = new CellRangeAddress(ROW_TABLE_FIRST_ENTRY, ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES - 1, COL_QUANTITY, COL_QUANTITY);
-        rows.get(ROW_TOTAL).createCell(COL_QUANTITY).setCellFormula("COUNT(" + qtyCellsRange.formatAsString() + ")");
         CellRangeAddress totalCellsRange = new CellRangeAddress(ROW_TABLE_FIRST_ENTRY, ROW_TABLE_FIRST_ENTRY + MAX_ENTRIES - 1, COL_TOTAL, COL_TOTAL);
         rows.get(ROW_TOTAL).createCell(COL_TOTAL).setCellFormula("SUM(" + totalCellsRange.formatAsString() + ")");
 
@@ -334,7 +332,6 @@ public class OrderFormXlsExporter implements Exporter<OrderForm> {
             row.createCell(COL_UNIT_PRICE + 1).setCellStyle(thinBorderCellStyle);
         }
 
-        rows.get(ROW_TOTAL).getCell(COL_QUANTITY).setCellStyle(mediumBorderCenteredCellStyle);
         rows.get(ROW_TOTAL).getCell(COL_TOTAL).setCellStyle(moneyMediumCellStyle);
     }
 
