@@ -96,7 +96,7 @@ public class OrderFormFormController implements Initializable {
 
         // check if exist
         numberField.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue) { // if loses focus
+            if (!newValue && numberField.textProperty().get().length() > 0) { // if loses focus
                 int newNumber = Integer.parseInt(numberField.textProperty().get());
                 if (orderForm != null && newNumber != orderForm.getNumber()) {
                     int year = orderForm.getDate().getYear();
