@@ -245,7 +245,7 @@ public class Database implements AutoCloseable {
         pw.close();
     }
 
-    public void moveDatabase(File selectedDirectory) throws Exception, IOException {
+    public void moveDatabase(File selectedDirectory) throws Exception {
         if (selectedDirectory.exists() && !selectedDirectory.isDirectory()) {
             throw new IOException("selected item is not a directory");
         }
@@ -281,6 +281,19 @@ public class Database implements AutoCloseable {
             throw e;
         }
 
+        this.connect();
+    }
+
+    public void copyDatabase(File targetFile) throws Exception {
+        if (!targetFile.getParentFile().exists() || !targetFile.getParentFile().isDirectory()) {
+            throw new IOException("path '" + targetFile.getAbsolutePath() + "' is not a directory");
+        }
+        if (targetFile.exists()) {
+            throw new FileAlreadyExistsException("database file already exists in '" + targetFile.getAbsolutePath() + "'");
+        }
+
+        this.disconnect();
+        Files.copy(Paths.get(getDatabasePath()), Paths.get(targetFile.getAbsolutePath()));
         this.connect();
     }
 

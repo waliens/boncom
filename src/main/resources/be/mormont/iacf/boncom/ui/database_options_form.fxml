@@ -24,12 +24,18 @@
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
 
             <Label fx:id="databasePathLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
             <TextField fx:id="databasePathField" disable="true" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="0" />
             <Button fx:id="databasePathEditButton" GridPane.columnIndex="4" GridPane.rowIndex="0" />
 
+            <ButtonBar prefHeight="40.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <buttons>
+                    <Button fx:id="saveButton"  mnemonicParsing="false" />
+                </buttons>
+            </ButtonBar>
         </GridPane>
     </center>
     <bottom>

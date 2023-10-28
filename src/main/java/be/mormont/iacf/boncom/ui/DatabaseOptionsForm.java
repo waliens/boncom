@@ -5,9 +5,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 
 import java.io.File;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
 public class DatabaseOptionsForm implements Initializable {
@@ -16,6 +21,7 @@ public class DatabaseOptionsForm implements Initializable {
     @FXML private Label databasePathLabel;
     @FXML private TextField databasePathField;
     @FXML private Button databasePathEditButton;
+    @FXML private Button saveButton;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -38,7 +44,6 @@ public class DatabaseOptionsForm implements Initializable {
                         "",
                         true
                 );
-
             } catch (Exception e) {
                 AlertHelper.popAlert(
                         Alert.AlertType.ERROR,
@@ -49,6 +54,39 @@ public class DatabaseOptionsForm implements Initializable {
                 );
             }
         });
+
+        saveButton.setText("Back-up");
+        saveButton.setTooltip(new Tooltip("Sauvegarder l'état de la base de données"));
+        saveButton.setOnMouseClicked(event -> {
+            FileChooser fileChooser = new FileChooser();
+            LocalDateTime now = LocalDateTime.now();
+            String formattedDate = now.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+            fileChooser.setInitialFileName("boncom-" + formattedDate + ".db");
+            File file = fileChooser.showSaveDialog(getWindow());
+
+            try {
+                Database.getDatabase().copyDatabase(file);
+                AlertHelper.popAlert(
+                        Alert.AlertType.CONFIRMATION,
+                        "Succès",
+                        "Base de données sauvegardée avec succès",
+                        "",
+                        true
+                );
+            } catch (Exception e) {
+                AlertHelper.popAlert(
+                        Alert.AlertType.ERROR,
+                        "Erreur",
+                        "Impossible de faire une sauvegarde de la base de données",
+                        "Erreur: " + e.getMessage(),
+                        true
+                );
+            }
+        });
+    }
+
+    private Window getWindow() {
+        return databasePathLabel.getScene().getWindow();
     }
 
     private void setPathFieldContent() {
